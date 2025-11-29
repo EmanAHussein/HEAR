@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: HEAR
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3307/HEAR_db?createDatabaseIfNotExist=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
