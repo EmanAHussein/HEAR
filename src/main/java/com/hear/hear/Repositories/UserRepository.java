@@ -1,4 +1,9 @@
 package com.hear.hear.Repositories;
 
-public interface UserRepository {
+import com.hear.hear.entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface UserRepository extends JpaRepository<User,Integer> {
 }

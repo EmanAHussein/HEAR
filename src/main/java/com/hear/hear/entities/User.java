@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "USER")
+@Table(name = "user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,5 +56,4 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "Question_id")
     )
     private List<Materials> favouredQuestion;
-
 }

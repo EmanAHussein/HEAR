@@ -13,7 +13,7 @@ import java.time.DayOfWeek;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "CLASS")
+@Table(name = "class")
 public class Class {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

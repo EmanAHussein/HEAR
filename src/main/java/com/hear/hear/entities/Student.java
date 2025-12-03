@@ -1,10 +1,7 @@
 package com.hear.hear.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,12 +10,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "STUDENT")
+@Table(name = "student")
+@ToString
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    private int id;
+    private Integer id;
 
     @Column(name = "Student_code")
     private int studentCode;
@@ -57,5 +55,6 @@ public class Student {
             inverseJoinColumns = @JoinColumn(name = "Class_id")
     )
     private List<Class> takesClasses;
+
 
 }
