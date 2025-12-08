@@ -1,19 +1,21 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@ToString
 @Table(name = "course")
 public class Course {
     @Id
@@ -35,6 +37,12 @@ public class Course {
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     @JsonIgnore
+    @ToString.Exclude
     private List<Class> classes;
+
+    @ManyToMany(mappedBy = "enrolledCourses")
+    @ToString.Exclude
+    @JsonBackReference
+    private Set<Student> students=new HashSet<>();
 
 }

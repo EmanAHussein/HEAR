@@ -1,9 +1,13 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -38,23 +42,27 @@ public class Student {
             joinColumns = @JoinColumn(name = "Student_id"),
             inverseJoinColumns = @JoinColumn(name = "Question_id")
     )
+    @ToString.Exclude
     private List<Question> solvedQuestions;
 
     @ManyToMany
     @JoinTable(
-            name = "Student_Enrolled_In_Course",
-            joinColumns = @JoinColumn(name = "Student_id"),
-            inverseJoinColumns = @JoinColumn(name = "Course_id")
+            name = "student_snrolled_in_course",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private List<Course> enrolledCourses;
+    @JsonManagedReference
+    private Set<Course> enrolledCourses=new HashSet<>();
 
     @ManyToMany
     @JoinTable(
-            name = "Student_Takes_Class",
-            joinColumns = @JoinColumn(name = "Student_id"),
-            inverseJoinColumns = @JoinColumn(name = "Class_id")
+            name = "student_takes_class",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "class_id")
     )
-    private List<Class> takesClasses;
+    @JsonManagedReference
+    @ToString.Exclude
+    private Set<Class> takesClasses=new HashSet<>();
 
 
 }

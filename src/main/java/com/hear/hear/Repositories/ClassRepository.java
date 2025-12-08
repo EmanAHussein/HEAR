@@ -1,13 +1,13 @@
 package com.hear.hear.Repositories;
-
 import com.hear.hear.entities.Class;
-import com.hear.hear.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import javax.crypto.spec.OAEPParameterSpec;
+import java.util.Optional;
 import java.util.Set;
 
-public interface UserRepository extends JpaRepository<User,Integer> {
+public interface ClassRepository extends JpaRepository<Class,Integer> {
+
 
 }

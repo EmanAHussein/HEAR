@@ -1,12 +1,17 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.context.annotation.Lazy;
+
 import java.sql.Time;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -32,10 +37,14 @@ public class Class {
     @Column(name = "Name")
     private String name;
 
+    @JsonIgnore
     @Column(name = "Type")
+    @Enumerated(EnumType.STRING)
     private ClassType type;
 
+
     @Column(name = "Day")
+    @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
     @ManyToOne
@@ -45,4 +54,11 @@ public class Class {
     @ManyToOne
     @JoinColumn(name = "Faculty_Member_id", referencedColumnName = "ID")
     private FacultyMember facultyMember;
+
+    @ManyToMany(mappedBy = "takesClasses")
+    @ToString.Exclude
+    @JsonBackReference
+    private Set<Student> students=new HashSet<>();
+
+
 }
