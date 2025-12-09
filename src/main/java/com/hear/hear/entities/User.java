@@ -55,5 +55,5 @@ public class User {
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "Question_id")
     )
-    private List<Materials> favouredQuestion;
+    private List<Question> favouredQuestion;
 }

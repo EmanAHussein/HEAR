@@ -2,20 +2,19 @@ package com.hear.hear.dtos;
 
 import com.hear.hear.entities.Department;
 import com.hear.hear.entities.User;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 @Getter
-public class StudentProfileDto {
-    private final Integer id;
+public class StudentProfileDto implements ProfileDto {
+    private final String name;
     private final int studentCode;
     private final byte currentLevel;
     private final Department department;
-    private final String name;
-    public StudentProfileDto(Integer id, int studentCode, byte currentLevel, Department department,User user) {
-        this.id = id;
+
+    public StudentProfileDto(int studentCode, byte currentLevel, Department department,User user) {
+        this.name = user.getName();
         this.studentCode = studentCode;
         this.currentLevel = currentLevel;
         this.department = department;
-        this.name = user.getName();
     }
 }
