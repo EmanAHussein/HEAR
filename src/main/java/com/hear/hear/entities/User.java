@@ -16,7 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    private int id;
+    private Integer id;
 
     @Column(name = "Email")
     private String email;
@@ -25,13 +25,17 @@ public class User {
     private String phone;
 
     @Column(name = "Hashed_password")
-    private  String hashedPassword;
+    private  String password;
 
     @Column(name = "Name")
     private String name;
 
     @Column(name = "Has_admin_permissions")
     private boolean hasAdminPermissions;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Role")
+    private Role role;
 
     @ManyToMany
     @JoinTable(

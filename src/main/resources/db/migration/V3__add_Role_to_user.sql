@@ -1,0 +1,2 @@
+alter table user
+    add Role ENUM('STUDENT', 'FACULTYMEMBER') DEFAULT 'STUDENT' NOT NULL;

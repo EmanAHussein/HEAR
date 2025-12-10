@@ -1,5 +1,6 @@
 package com.hear.hear.Controllers;
 
+import com.hear.hear.Mappers.RegisterUserRequest;
 import com.hear.hear.Repositories.UserRepository;
 import com.hear.hear.dtos.ProfileDto;
 import com.hear.hear.entities.Department;
@@ -21,11 +22,14 @@ import java.util.List;
 public class UserController {
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
+    RegisterUserRequest registerRequest;
 
     @GetMapping("/get_users")
     public List<User> getUsers() {
         return userRepository.findAll();
     }
+
+
 
 //    @GetMapping("/me")
 //    public ResponseEntity<ProfileDto> getCurrentUser(){

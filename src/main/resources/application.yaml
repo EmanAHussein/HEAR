@@ -8,3 +8,17 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
     clean-disabled: false
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  jwt:
+    secret: n1zoCHiiJ4ztbMuookIIS8S4aPxd4wNPNQHFwQQLPVQ
+    accessTokenExpiration: 86400
+    refreshTokenExpiration: 2592000
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
