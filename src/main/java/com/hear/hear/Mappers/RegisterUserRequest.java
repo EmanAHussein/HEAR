@@ -7,8 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RegisterUserRequest {
-    @Mapping(source = "password",target = "hashedPassword")
-    User toRegister(RegisterRequest registerRequest);
 
+    User toUser(RegisterRequest registerRequest);
 
 }

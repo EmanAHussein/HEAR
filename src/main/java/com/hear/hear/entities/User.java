@@ -18,18 +18,17 @@ public class User {
     @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "Name")
-    private String name;
-
     @Column(name = "Email")
     private String email;
-
-    @Column(name = "Hashed_password")
-    private  String password;
 
     @Column(name = "phone")
     private String phone;
 
+    @Column(name = "Hashed_password")
+    private  String password;
+
+    @Column(name = "Name")
+    private String name;
 
     @Column(name = "Has_admin_permissions")
     private boolean hasAdminPermissions;
