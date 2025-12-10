@@ -1,16 +1,20 @@
 package com.hear.hear.authentication;
 
 import com.hear.hear.Mappers.RegisterUserRequest;
-import com.hear.hear.dtos.JwtResponse;
+import com.hear.hear.Repositories.UserRepository;
 import com.hear.hear.dtos.LoginRequest;
 import com.hear.hear.dtos.RegisterRequest;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
+import com.hear.hear.entities.User;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -18,41 +22,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final JwtConfig jwtConfig;
+    private final UserRepository userRepository;
+    @Autowired
     RegisterUserRequest registerUserRequest;
-    private final AuthenticationService authService;
-
+    private final PasswordEncoder passwordEncoder;
     @PostMapping("/login")
-    public JwtResponse login(
-            @Valid @RequestBody LoginRequest request,
-            HttpServletResponse response) {
+    public ResponseEntity<Void> login(
+            @Valid @RequestBody LoginRequest request
+    ) {
+        var user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
-        var loginResult = authService.login(request);
-
-        var refreshToken = loginResult.getRefreshToken().toString();
-        var cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/auth/refresh");
-        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
-        cookie.setSecure(true);
-        response.addCookie(cookie);
-
-        return new JwtResponse(loginResult.getAccessToken().toString());
+        if (user == null || !passwordEncoder.matches(request.getPassword(),user.getHashedPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/refresh")
-    public JwtResponse refresh(@CookieValue(value = "refreshToken") String refreshToken) {
-        Jwt accessToken = authService.refreshAccessToken(refreshToken);
-        return new JwtResponse(accessToken.toString());
-    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
-        var user = authService.registerUser(request);
-        if(user == null) {
+        if(userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(Map.of("email","Email is already registered"));
         }
+        var user = registerUserRequest.toRegister(request);
+        String hashed=passwordEncoder.encode(user.getHashedPassword());
+        user.setHashedPassword(hashed);
+        userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
