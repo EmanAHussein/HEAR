@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
-public interface StudentAllScheduleMapping {
+public interface UserAllScheduleMapping {
 
     Set<StudentScheduleDto> toScheduleDto(Set<Class> classes);
 

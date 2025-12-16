@@ -1,5 +1,4 @@
 package com.hear.hear.entities;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,16 +37,7 @@ public class Student {
 
     @ManyToMany
     @JoinTable(
-            name = "Question_Solved_By_Student",
-            joinColumns = @JoinColumn(name = "Student_id"),
-            inverseJoinColumns = @JoinColumn(name = "Question_id")
-    )
-    @ToString.Exclude
-    private List<Question> solvedQuestions;
-
-    @ManyToMany
-    @JoinTable(
-            name = "student_snrolled_in_course",
+            name = "student_enrolled_in_course",
             joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
@@ -63,6 +53,5 @@ public class Student {
     @JsonManagedReference
     @ToString.Exclude
     private Set<Class> takesClasses=new HashSet<>();
-
 
 }

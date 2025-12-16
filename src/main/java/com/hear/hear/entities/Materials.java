@@ -1,12 +1,12 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -33,6 +33,7 @@ public class Materials {
     private String link;
 
     @Column(name = "Status")
+    @Enumerated(value = EnumType.STRING)
     private MQStatus status;
 
     @Column(name = "Time_added")
@@ -52,4 +53,9 @@ public class Materials {
     @ManyToOne()
     @JoinColumn(name = "Course_id", referencedColumnName = "ID")
     private Course course;
+
+    @ManyToMany(mappedBy = "favouredMaterials")
+    @JsonBackReference
+    public Set<User> users=new HashSet<>();
+
 }

@@ -5,6 +5,8 @@ import com.hear.hear.entities.FacultyMember;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface FacultyMemberProfileMapping {
+public interface FacultyMemberMapping {
     FacultyProfileDto ToFacultyProfileDto(FacultyMember facultyMember);
+
+
 }

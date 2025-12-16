@@ -23,7 +23,6 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    @Autowired
     RegisterUserRequest registerUserRequest;
 
     public LoginResponse login(LoginRequest request) {
@@ -46,8 +45,8 @@ public class AuthenticationService {
         if (jwt == null || jwt.isExpired()) {
             throw new BadCredentialsException("Refresh token invalid.");
         }
-
-        var user = userRepository.findById(jwt.getUserId().intValue()).orElseThrow();
+        var userId = jwt.getUserId();
+        var user = userRepository.findById(userId).orElseThrow();
         return jwtService.generateAccessToken(user);
     }
 

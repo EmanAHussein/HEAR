@@ -53,11 +53,11 @@ public class Class {
 
     @ManyToOne
     @JoinColumn(name = "Faculty_Member_id", referencedColumnName = "ID")
+    @JsonBackReference
     private FacultyMember facultyMember;
 
     @ManyToMany(mappedBy = "takesClasses")
     @ToString.Exclude
-    @JsonBackReference
     private Set<Student> students=new HashSet<>();
 
 

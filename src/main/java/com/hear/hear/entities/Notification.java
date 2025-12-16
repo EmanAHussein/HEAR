@@ -1,12 +1,11 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -29,8 +28,8 @@ public class Notification {
     @Column(name = "Created_At")
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "Creator_ID", referencedColumnName = "ID")
-    private User creator;
+    @ManyToMany(mappedBy = "notifications")
+    @JsonBackReference
+    private Set<User> creator;
 
 }

@@ -1,9 +1,12 @@
 package com.hear.hear.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -38,26 +41,20 @@ public class User {
     private Role role;
 
     @ManyToMany
+    @JsonManagedReference
     @JoinTable(
-            name = "User_Has_Notification",
+            name = "user_has_notification",
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "Notification_id")
     )
-    private List<Notification> notifications;
+    private Set<Notification> notifications;
 
     @ManyToMany
     @JoinTable(
-            name = "Material_Favoured_By_User",
+            name = "material_favoured_by_user",
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "Material_id")
     )
-    private List<Materials> favouredMaterials;
+    private Set<Materials> favouredMaterials=new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "Question_Favoured_By_User",
-            joinColumns = @JoinColumn(name = "User_id"),
-            inverseJoinColumns = @JoinColumn(name = "Question_id")
-    )
-    private List<Question> favouredQuestion;
 }

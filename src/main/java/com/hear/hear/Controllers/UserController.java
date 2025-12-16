@@ -1,44 +1,92 @@
 package com.hear.hear.Controllers;
 
+import com.hear.hear.Mappers.FavouriteMaterialsMapping;
 import com.hear.hear.Mappers.RegisterUserRequest;
 import com.hear.hear.Repositories.UserRepository;
-import com.hear.hear.dtos.ProfileDto;
-import com.hear.hear.entities.Department;
-import com.hear.hear.entities.Student;
 import com.hear.hear.entities.User;
+import com.hear.hear.services.AuthService;
+import com.hear.hear.services.ClassService;
+import com.hear.hear.services.UserService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/user")
 @AllArgsConstructor
 public class UserController {
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder;
-    RegisterUserRequest registerRequest;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RegisterUserRequest registerRequest;
+    private final AuthService authService;
+    private final FavouriteMaterialsMapping favouriteMaterialsMapping;
+    private final ClassService classService;
+    private final UserService userService;
 
-    @GetMapping("/get_users")
-    public List<User> getUsers() {
-        return userRepository.findAll();
+
+    @GetMapping("/getUserProfile")
+    public ResponseEntity<?> getUserProfile() {
+        var user=authService.getCurrentUser();
+       var userProfile= userService.getUserProfile(user);
+        if(userProfile.isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(userProfile);
     }
 
 
 
-//    @GetMapping("/me")
-//    public ResponseEntity<ProfileDto> getCurrentUser(){
-//        Integer userId = 1;
-//        var user = userRepository.findById(userId).orElse(null);
-//        if(user == null){
-//            return ResponseEntity.notFound().build();
-//        }
-//        FIGURED OUT I NEED TO IMPLEMENT Tokens & AUTH FIRST :(
-//    }
+
+
+@GetMapping("/getFavouriteMaterials")
+    public ResponseEntity<?> getFavoriteMaterials() {
+        var user=authService.getCurrentUser().getId();
+
+        if(user==null){
+            return ResponseEntity.notFound().build();
+        }
+        var favouriteMaterials=userRepository.findMaterialsForUser(user);
+        if (favouriteMaterials.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(favouriteMaterialsMapping.getFavouriteMaterials(favouriteMaterials));
+}
+
+    @GetMapping("/getAllClassesByUserId")
+    public ResponseEntity<?> getAllClassesByUserId() {
+        var userId=authService.getCurrentUser().getId();
+        var user= userRepository.findById(userId);
+        var classes=classService.getAllClassesByUserId(user.get());
+        if(classes.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(classes);
+    }
+
+    @GetMapping("/getAllClassesByUserIdAndDay")
+    public ResponseEntity<?> getAllClassesByUserIdAndDay() {
+        var userId=authService.getCurrentUser().getId();
+        var user= userRepository.findById(userId).orElse(null);
+        var day = LocalDate.now().getDayOfWeek();
+        assert user != null;
+        var classes=classService.getAllClassesByUserIdAndDay(user,day);
+        if(classes.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(classes);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleException(RuntimeException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+
 
 }

@@ -5,7 +5,7 @@ import com.hear.hear.entities.User;
 import lombok.Getter;
 
 @Getter
-public class StudentProfileDto implements ProfileDto {
+public class StudentProfileDto {
     private final String name;
     private final int studentCode;
     private final byte currentLevel;

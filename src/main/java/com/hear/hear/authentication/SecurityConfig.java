@@ -1,10 +1,11 @@
 package com.hear.hear.authentication;
 
-import com.hear.hear.services.UserServiceDto;
+import com.hear.hear.filters.LoggingFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,13 +18,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfig {
 
+
     private final UserDetailsService userDetailsService;
+    private final LoggingFilter loggingFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -42,7 +48,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(session -> session
@@ -51,12 +56,21 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers(HttpMethod.POST,"/auth/login")
-                                .anonymous().requestMatchers(HttpMethod.POST,"/auth/register")
-                                .permitAll().anyRequest().authenticated());
+                                .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST,"/auth/register").permitAll()
+                                .anyRequest().authenticated()
+                ).addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling( c-> {
+                    c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+                    c.accessDeniedHandler(((request, response, accessDeniedException) ->
+                            response.setStatus(HttpStatus.FORBIDDEN.value())));
+                });
         return http.build();
     }
 
+    //include this line when you try to restrict access only to user has Admin role
+//.requestMatchers(HttpMethod.POST,"/auth/Admin").hasRole()
 
 
 //    @Bean

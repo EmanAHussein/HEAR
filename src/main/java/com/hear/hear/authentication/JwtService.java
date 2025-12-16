@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -31,6 +30,7 @@ public class JwtService {
                 .add("email", user.getEmail())
                 .add("name", user.getName())
                 .add("role", user.getRole())
+                .add("isAdmin",user.isHasAdminPermissions())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .build();
@@ -53,5 +53,27 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            var Claims=getClaims(token);
+            return Claims.getExpiration().after(new Date());
+        } catch (JwtException ex) {
+            return false;
+        }
+
+    }
+
+    public Integer getUserIdFormToken(String token) {
+            return Integer.valueOf( getClaims(token).getSubject());
+    }
+    public String getIsAdminFromToken(String token) {
+        var r=(boolean) getClaims(token).get("isAdmin");
+        if(r){
+            return "ADMIN";
+        }
+        else
+            return "USER";
     }
 }

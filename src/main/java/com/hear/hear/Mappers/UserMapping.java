@@ -4,12 +4,10 @@ import com.hear.hear.dtos.RegisterRequest;
 import com.hear.hear.dtos.UserDto;
 import com.hear.hear.entities.User;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface RegisterUserRequest {
-
-    User toUser(RegisterRequest registerRequest);
+public interface UserMapping {
+    User toEntity(UserDto userDto);
     UserDto toDto(User user);
 
 }
