@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -31,7 +32,7 @@ public class User {
     private String name;
 
     @Column(name = "Has_admin_permissions")
-    private boolean hasAdminPermissions;
+    private boolean admin;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "Role")
@@ -43,7 +44,7 @@ public class User {
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "Notification_id")
     )
-    private List<Notification> notifications;
+    private Set<Notification> notifications;
 
     @ManyToMany
     @JoinTable(
@@ -51,7 +52,7 @@ public class User {
             joinColumns = @JoinColumn(name = "User_id"),
             inverseJoinColumns = @JoinColumn(name = "Material_id")
     )
-    private List<Materials> favouredMaterials;
+    private Set<Materials> favouredMaterials;
 
     @ManyToMany
     @JoinTable(
@@ -60,4 +61,5 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "Question_id")
     )
     private List<Question> favouredQuestion;
+
 }

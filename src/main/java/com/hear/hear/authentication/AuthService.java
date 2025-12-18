@@ -1,30 +1,31 @@
 package com.hear.hear.authentication;
 
-import com.hear.hear.Mappers.RegisterUserRequest;
+import com.hear.hear.Mappers.UserMapping;
 import com.hear.hear.Repositories.UserRepository;
 import com.hear.hear.dtos.LoginRequest;
 import com.hear.hear.dtos.LoginResponse;
-import com.hear.hear.dtos.RegisterRequest;
+import com.hear.hear.dtos.RegisterUserRequest;
 import com.hear.hear.entities.User;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 @Service
 @AllArgsConstructor
-public class AuthenticationService {
+public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     @Autowired
-    RegisterUserRequest registerUserRequest;
+    UserMapping registerUserRequestMapper;
 
     public LoginResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -51,16 +52,22 @@ public class AuthenticationService {
         return jwtService.generateAccessToken(user);
     }
 
-    User registerUser(RegisterRequest registerRequest) {
+    User registerUser(RegisterUserRequest registerRequest) {
         if(userRepository.existsByEmail(registerRequest.getEmail())){
             return null;
         }
-        var user = registerUserRequest.toUser(registerRequest);
-        System.out.println(user.getPassword());
+        var user = registerUserRequestMapper.toUser(registerRequest);
         String hashed=passwordEncoder.encode(user.getPassword());
         user.setPassword(hashed);
-        System.out.println(user.getPassword());
         userRepository.save(user);
         return user;
+    }
+
+    public User getCurrentUser(){
+        var authenticatedUser = SecurityContextHolder.getContext().getAuthentication();
+        assert authenticatedUser != null;
+        var userId = (Integer) authenticatedUser.getPrincipal();
+        assert userId != null;
+        return userRepository.findById(userId).orElse(null);
     }
 }

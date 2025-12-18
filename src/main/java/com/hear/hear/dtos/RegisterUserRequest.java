@@ -1,9 +1,7 @@
 package com.hear.hear.dtos;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.hear.hear.entities.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,10 +10,10 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-public class RegisterRequest {
+public class RegisterUserRequest {
     @NotBlank(message = "Email is required")
     @Email
     private String email;
@@ -26,5 +24,8 @@ public class RegisterRequest {
     private String phone;
     @NotNull(message = "Role is required")
     private Role role;
+    private boolean isAdmin;
+    @NotNull(message = "Profile info is required")
+    private Object profile;
 
 }

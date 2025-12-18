@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Lazy;
 
 import java.sql.Time;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,10 +27,10 @@ public class Class {
     private int id;
 
     @Column(name = "Start_time")
-    private Time startTime;
+    private LocalTime startTime;
 
     @Column(name = "End_time")
-    private Time endTime;
+    private LocalTime endTime;
 
     @Column(name = "Room")
     private String room;
@@ -47,17 +48,17 @@ public class Class {
     @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "Course_id", referencedColumnName = "ID")
     private Course course;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "Faculty_Member_id", referencedColumnName = "ID")
+    @JsonBackReference
     private FacultyMember facultyMember;
 
     @ManyToMany(mappedBy = "takesClasses")
     @ToString.Exclude
-    @JsonBackReference
     private Set<Student> students=new HashSet<>();
 
 

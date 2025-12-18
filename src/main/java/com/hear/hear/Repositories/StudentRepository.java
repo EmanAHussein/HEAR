@@ -1,7 +1,9 @@
 package com.hear.hear.Repositories;
+
 import com.hear.hear.entities.Class;
 import com.hear.hear.entities.Course;
 import com.hear.hear.entities.Student;
+import com.hear.hear.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +16,8 @@ import java.util.Set;
 
 public interface StudentRepository extends JpaRepository<Student, Integer> {
 
+    void deleteByUser(User user);
+
     @Query("SELECT c FROM Class c JOIN c.students s WHERE s.id = :studentId")
     Set<Class> findClassesForStudent(Integer studentId);
 
@@ -22,4 +26,10 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     @Query("SELECT c FROM Course c JOIN c.students s where s.id = :studentId")
     Set<Course> findCoursesForStudentByStudentId(Integer studentId);
+
+    @Query("SELECT s FROM Student s  WHERE s.user.id = :userId")
+    Optional<Student> findStudentByUserId(@Param("userId")Integer userId);
+
+
+    Optional<Student> findByUser(User user);
 }

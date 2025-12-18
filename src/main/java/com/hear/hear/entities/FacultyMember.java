@@ -1,12 +1,14 @@
 package com.hear.hear.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -38,6 +40,6 @@ public class FacultyMember {
     private User user;
 
     @OneToMany(mappedBy = "facultyMember", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Class> classes;
+    @JsonManagedReference
+    private Set<Class> classes;
 }

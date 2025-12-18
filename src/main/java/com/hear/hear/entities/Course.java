@@ -2,7 +2,6 @@ package com.hear.hear.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,7 +23,7 @@ public class Course {
     private int id;
 
     @Column(name = "Name")
-    private String Name;
+    private String name;
 
     @Column(name = "Course_code")
     private String code;
