@@ -10,4 +10,3 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 
     boolean existsByCode(@NotBlank(message = "code is required") String code);
 }
-

@@ -18,8 +18,8 @@ public class Jwt {
         return claims.getExpiration().before(new Date());
     }
 
-    public Integer getUserId() {
-        return Integer.valueOf(claims.getSubject());
+    public Long getUserId() {
+        return Long.valueOf(claims.getSubject());
     }
 
     public Role getRole() {
@@ -29,6 +29,4 @@ public class Jwt {
     public String toString() {
         return Jwts.builder().claims(claims).signWith(secretKey).compact();
     }
-
-
 }
