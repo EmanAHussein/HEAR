@@ -1,4 +1,4 @@
-package com.hear.hear.services;
+package com.hear.hear.dtos;
 
 import com.hear.hear.Repositories.UserRepository;
 import lombok.AllArgsConstructor;

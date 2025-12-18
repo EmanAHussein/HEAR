@@ -26,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @AllArgsConstructor
 public class SecurityConfig {
 
+
     private final UserDetailsService userDetailsService;
     private final LoggingFilter loggingFilter;
 
@@ -46,7 +47,6 @@ public class SecurityConfig {
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -69,6 +69,8 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //include this line when you try to restrict access only to user has Admin role
+//.requestMatchers(HttpMethod.POST,"/auth/Admin").hasRole()
 
 
 //    @Bean
