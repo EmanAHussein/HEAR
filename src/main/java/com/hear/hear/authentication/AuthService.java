@@ -8,6 +8,8 @@ import com.hear.hear.dtos.RegisterUserRequest;
 import com.hear.hear.entities.User;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,21 +54,17 @@ public class AuthService {
         return jwtService.generateAccessToken(user);
     }
 
-    User registerUser(RegisterUserRequest registerRequest) {
-        if(userRepository.existsByEmail(registerRequest.getEmail())){
-            return null;
-        }
-        var user = registerUserRequestMapper.toUser(registerRequest);
-        String hashed=passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashed);
-        userRepository.save(user);
-        return user;
-    }
 
     public User getCurrentUser(){
         var authenticatedUser = SecurityContextHolder.getContext().getAuthentication();
         assert authenticatedUser != null;
-        var userId = (Integer) authenticatedUser.getPrincipal();
+        var principal = authenticatedUser.getPrincipal();
+        Integer userId;
+        if (principal instanceof Number) {
+            userId = ((Number) principal).intValue();
+        } else {
+            return null;
+        }
         assert userId != null;
         return userRepository.findById(userId).orElse(null);
     }

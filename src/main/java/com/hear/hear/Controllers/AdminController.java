@@ -1,5 +1,7 @@
 package com.hear.hear.Controllers;
 
+import com.hear.hear.Mappers.FacultyProfileMapping;
+import com.hear.hear.Mappers.StudentProfileMapping;
 import com.hear.hear.Repositories.FacultyMemRepository;
 import com.hear.hear.Repositories.StudentRepository;
 import com.hear.hear.dtos.*;
@@ -9,6 +11,11 @@ import com.hear.hear.entities.User;
 import com.hear.hear.services.ClassService;
 import com.hear.hear.services.CourseService;
 import com.hear.hear.services.UserService;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,39 +33,77 @@ public class AdminController {
     private final ClassService classService;
     private final StudentRepository studentRepository;
     private final FacultyMemRepository facultyMemRepository;
+    private final FacultyProfileMapping facultyProfileMapping;
+    private final StudentProfileMapping studentProfileMapping;
     //----------------------------------------------
 
+    @ApiResponse(
+            responseCode = "200",
+            description = "List of user classes",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = StudentDto.class)
+                    )
+            )
+    )
     @GetMapping("/students/all/get")
     public ResponseEntity<?> getAllStudents() {
-        var students =studentRepository.findAll();
+        var students = studentProfileMapping.toDto(studentRepository.findAll());
         if(students.isEmpty()){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(students);
     }
 
-    @GetMapping("/student/{studentId}/get")
+    @ApiResponse(
+            responseCode = "200",
+            description = "List of user classes",
+            content = @Content(
+                    mediaType = "application/json",
+                            schema = @Schema(implementation = StudentDto.class)
+            )
+    )
+    @GetMapping("/students/{studentId}/get")
     public ResponseEntity<?> getStudentById(@PathVariable Integer studentId) {
-        var student =studentRepository.findById(studentId).orElse(null);
+        var student = studentProfileMapping.toDto(studentRepository.findById(studentId).orElse(null));
         if(student == null){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(student);
     }
 
+    @ApiResponse(
+            responseCode = "200",
+            description = "List of user classes",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = FacultyMemberDto.class)
+                    )
+            )
+    )
     @GetMapping("/faculty_members/all/get")
     public ResponseEntity<?> getAllFacultyMembers() {
-        var facultyMembers =facultyMemRepository.findAll();
+        var facultyMembers = facultyProfileMapping.toDto(facultyMemRepository.findAll());
         if(facultyMembers.isEmpty()){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(facultyMembers);
     }
 
+    @ApiResponse(
+            responseCode = "200",
+            description = "List of user classes",
+            content = @Content(
+                    mediaType = "application/json",
+                            schema = @Schema(implementation = FacultyMemberDto.class)
+            )
+    )
     //    when admin click on specific member
-    @GetMapping("/faculty_member/{id}/all/get'")
+    @GetMapping("/faculty_members/{facultyMemberId}/get'")
     public ResponseEntity<?> getMemberById(@PathVariable Integer facultyMemberId) {
-        var facultyMember =studentRepository.findById(facultyMemberId).orElse(null);
+        var facultyMember = facultyProfileMapping.toDto(facultyMemRepository.findById(facultyMemberId).orElse(null));
         if(facultyMember == null){
             return ResponseEntity.notFound().build();
         }
@@ -85,6 +130,56 @@ public class AdminController {
     }
 
     // ----------------------------------
+
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = {
+
+                            @ExampleObject(
+                                    name = "Student Register",
+                                    summary = "Register a student",
+                                    value = """
+                {
+                  "email": "student@example.com",
+                  "password": "string",
+                  "name": "Student Name",
+                  "phone": "0100000000",
+                  "role": "STUDENT",
+                  "profile": {
+                    "studentCode": 123456,
+                    "currentLevel": 3,
+                    "department": "CS"
+                  },
+                  "admin": false
+                }
+                """
+                            ),
+
+                            @ExampleObject(
+                                    name = "Faculty Register",
+                                    summary = "Register a faculty member",
+                                    value = """
+                {
+                  "email": "faculty@example.com",
+                  "password": "string",
+                  "name": "Faculty Name",
+                  "phone": "0100000000",
+                  "role": "FACULTYMEMBER",
+                  "profile": {
+                    "jobTitle": "Professor",
+                    "department": "CS",
+                    "scientificDegree": "PhD",
+                    "bio": "Some bio"
+                  },
+                  "admin": false
+                }
+                """
+                            )
+                    }
+            )
+    )
 
     @PostMapping("/user/add")
     public ResponseEntity<?> addUser(@RequestBody RegisterUserRequest registerUserRequest) {

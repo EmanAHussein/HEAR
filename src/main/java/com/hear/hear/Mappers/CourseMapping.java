@@ -8,6 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.Set;
+
 @Mapper(componentModel = "spring")
 public interface CourseMapping {
     Course toCourse(RegisterCourseDto registerCourseDto);
@@ -19,4 +21,7 @@ public interface CourseMapping {
             UpdateCourseDto updateCourseDto,
             @MappingTarget Course course
     );
+
+    RegisterCourseDto toDto(Course course);
+    Set<RegisterCourseDto> toDto(Set<Course> courses);
 }

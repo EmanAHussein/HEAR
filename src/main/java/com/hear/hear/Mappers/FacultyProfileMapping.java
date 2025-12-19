@@ -1,14 +1,11 @@
 package com.hear.hear.Mappers;
 
-import com.hear.hear.dtos.FacultyProfileDto;
-import com.hear.hear.dtos.RegisterFacultyProfile;
-import com.hear.hear.dtos.UpdateFacultyProfile;
-import com.hear.hear.dtos.UpdateStudentProfile;
+import com.hear.hear.dtos.*;
 import com.hear.hear.entities.FacultyMember;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import com.hear.hear.entities.Student;
+import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface FacultyProfileMapping {
@@ -25,4 +22,11 @@ public interface FacultyProfileMapping {
     );
 
     FacultyMember toFacultyMember(UpdateFacultyProfile updateFacultyProfile);
+
+    @Mapping(source = "id", target = "facultyMemberId")
+    @Mapping(source = "user.name", target = "name")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.id", target = "userId")
+    FacultyMemberDto toDto(FacultyMember facultyMembers);
+    List<FacultyMemberDto> toDto(List<FacultyMember> facultyMembers);
 }

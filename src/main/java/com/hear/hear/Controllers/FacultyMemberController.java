@@ -18,7 +18,7 @@ public class FacultyMemberController {
     private final AuthService authService;
     private final FacultyMemberService facultyMemberService;
 
-    @GetMapping("/Profile/{id}/get")
+    @GetMapping("/profile/{id}/get")
     public ResponseEntity<FacultyProfileDto> getMemberProfile(@PathVariable Integer id){
         var facultyMember=  facultyMemRepository.findById(id).orElse(null);
         if(facultyMember==null){
@@ -27,7 +27,7 @@ public class FacultyMemberController {
         return ResponseEntity.ok(facultyMemberProfileMapping.ToFacultyProfileDto(facultyMember));
     }
 
-    @PutMapping("/Profile/update")
+    @PutMapping("/profile/update")
     public ResponseEntity<?> updateFacultyMemberProfile(@RequestBody FacultyProfileDto facultyProfileDto) {
         var member = authService.getCurrentUser();
         var mem=facultyMemRepository.findFacultyMemberByUserId(member.getId());

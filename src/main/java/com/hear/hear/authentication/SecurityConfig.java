@@ -59,6 +59,11 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST,"/auth/register").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/auth/refresh").permitAll()
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
                                 .anyRequest().authenticated()
                 ).addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling( c-> {
@@ -68,24 +73,4 @@ public class SecurityConfig {
                 });
         return http.build();
     }
-
-
-
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http.sessionManagement(session -> session
-//            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//        )
-//        .csrf(csrf -> csrf.disable())
-//        .authorizeHttpRequests(
-//
-//
-////                auth -> auth.requestMatchers(HttpMethod.POST,"/auth/login")
-////                        .permitAll().anyRequest().authenticated()
-//
-//
-//                auth -> auth.anyRequest().permitAll()
-//        );
-//        return http.build();
-//    }
 }

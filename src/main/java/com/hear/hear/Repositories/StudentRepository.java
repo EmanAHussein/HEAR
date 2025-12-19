@@ -18,11 +18,11 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     void deleteByUser(User user);
 
-    @Query("SELECT c FROM Class c JOIN c.students s WHERE s.id = :studentId")
-    Set<Class> findClassesForStudent(Integer studentId);
+    @Query("SELECT c FROM Class c JOIN c.students s WHERE s.user.id = :userId")
+    Set<Class> findClassesForStudent(@Param("userId") Integer userId);
 
-    @Query("SELECT c FROM Class c JOIN c.students s WHERE s.id = :studentId AND c.day = :day")
-    Set<Class> findClassesForStudentByDay(@Param("studentId") Integer studentId,@Param("day") DayOfWeek day);
+    @Query("SELECT c FROM Class c JOIN c.students s WHERE s.user.id = :userId AND c.day = :day")
+    Set<Class> findClassesForStudentByDay(@Param("userId") Integer userId, @Param("day") DayOfWeek day);
 
     @Query("SELECT c FROM Course c JOIN c.students s where s.id = :studentId")
     Set<Course> findCoursesForStudentByStudentId(Integer studentId);

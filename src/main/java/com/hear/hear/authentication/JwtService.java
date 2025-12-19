@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -31,7 +30,7 @@ public class JwtService {
                 .add("email", user.getEmail())
                 .add("name", user.getName())
                 .add("role", user.getRole())
-                .add("admin", user.isAdmin())
+                .add("isAdmin", user.isAdmin())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .build();
