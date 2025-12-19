@@ -17,7 +17,7 @@ spring:
     refreshTokenExpiration: 2592000
 
   profiles:
-    active: dev
+    active: prod
 
 server:
   port: 8080
