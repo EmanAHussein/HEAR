@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS railway;
-USE railway;
+CREATE DATABASE IF NOT EXISTS HEAR_db;
+USE HEAR_db;
 
-CREATE TABLE user (
+CREATE TABLE USER (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Has_admin_permissions BOOLEAN DEFAULT FALSE,
     Hashed_password VARCHAR(255) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE user (
     Email VARCHAR(150) NOT NULL UNIQUE
 );
 
-CREATE TABLE faculty_member (
+CREATE TABLE FACULTY_MEMBER (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     User_id INT NOT NULL UNIQUE,
     Job_title VARCHAR(150),
@@ -20,7 +20,7 @@ CREATE TABLE faculty_member (
     FOREIGN KEY (User_id) REFERENCES USER(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE student (
+CREATE TABLE STUDENT (
      ID INT AUTO_INCREMENT PRIMARY KEY,
      User_id INT NOT NULL UNIQUE,
      Student_code INT UNIQUE,
@@ -29,7 +29,7 @@ CREATE TABLE student (
      FOREIGN KEY (User_id) REFERENCES USER(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE course (
+CREATE TABLE COURSE (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(200) NOT NULL UNIQUE,
     Course_code VARCHAR(50) NOT NULL UNIQUE,
@@ -37,7 +37,7 @@ CREATE TABLE course (
     Credit_hours TINYINT NOT NULL
 );
 
-CREATE TABLE class (
+CREATE TABLE CLASS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Course_id INT NOT NULL,
     Faculty_member_id INT,
@@ -51,7 +51,7 @@ CREATE TABLE class (
     FOREIGN KEY (Faculty_member_id) REFERENCES FACULTY_MEMBER(ID) ON DELETE SET NULL
 );
 
-CREATE TABLE materials (
+CREATE TABLE MATERIALS (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Course_id INT,
     Added_by INT,
@@ -68,7 +68,7 @@ CREATE TABLE materials (
     FOREIGN KEY (Approved_by) REFERENCES USER(ID) ON DELETE SET NULL
 );
 
-CREATE TABLE question (
+CREATE TABLE QUESTION (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Course_id INT,
     Added_by INT,
@@ -84,14 +84,14 @@ CREATE TABLE question (
     FOREIGN KEY (Approved_by) REFERENCES USER(ID) ON DELETE SET NULL
 );
 
-CREATE TABLE choices (
+CREATE TABLE CHOICES (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Question_id INT NOT NULL,
     Choice TEXT NOT NULL,
     FOREIGN KEY (Question_id) REFERENCES QUESTION(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE notification (
+CREATE TABLE NOTIFICATION (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Creator_id INT,
     Title VARCHAR(255) NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE notification (
     FOREIGN KEY (Creator_id) REFERENCES USER(ID) ON DELETE SET NULL
 );
 
-CREATE TABLE user_has_notification (
+CREATE TABLE User_Has_Notification (
     User_ID INT NOT NULL,
     Notification_id INT NOT NULL,
     PRIMARY KEY (User_ID, Notification_id),
@@ -108,7 +108,7 @@ CREATE TABLE user_has_notification (
     FOREIGN KEY (Notification_id) REFERENCES NOTIFICATION(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE question_favoured_by_user (
+CREATE TABLE Question_Favoured_By_User (
     User_id INT NOT NULL,
     Question_id INT NOT NULL,
     PRIMARY KEY (User_id, Question_id),
@@ -116,7 +116,7 @@ CREATE TABLE question_favoured_by_user (
     FOREIGN KEY (Question_id) REFERENCES QUESTION(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE material_favoured_by_user (
+CREATE TABLE Material_Favoured_By_User (
     User_id INT NOT NULL,
     Material_id INT NOT NULL,
     PRIMARY KEY (User_id, Material_id),
@@ -124,7 +124,7 @@ CREATE TABLE material_favoured_by_user (
     FOREIGN KEY (Material_id) REFERENCES MATERIALS(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE question_solved_by_student (
+CREATE TABLE Question_Solved_By_Student (
     Student_id INT NOT NULL,
     Question_id INT NOT NULL,
     PRIMARY KEY (Student_id, Question_id),
@@ -132,7 +132,7 @@ CREATE TABLE question_solved_by_student (
     FOREIGN KEY (Question_id) REFERENCES QUESTION(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE student_enrolled_in_course (
+CREATE TABLE Student_Enrolled_In_Course (
     Student_id INT NOT NULL,
     Course_id INT NOT NULL,
     PRIMARY KEY (Student_id, Course_id),
@@ -140,7 +140,7 @@ CREATE TABLE student_enrolled_in_course (
     FOREIGN KEY (Course_id) REFERENCES COURSE(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE student_takes_class (
+CREATE TABLE Student_Takes_Class (
     Student_id INT NOT NULL,
     Class_id INT NOT NULL,
     PRIMARY KEY (Student_id, Class_id),
