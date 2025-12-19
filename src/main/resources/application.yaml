@@ -1,25 +1,23 @@
 spring:
   application:
     name: HEAR
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3307/HEAR_db?createDatabaseIfNotExist=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  flyway:
-    clean-disabled: false
-    baseline-on-migrate: true
+
   jpa:
-    show-sql: true
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
+
+  flyway:
+    baseline-on-migrate: true
+
   jwt:
-    secret: n1zoCHiiJ4ztbMuookIIS8S4aPxd4wNPNQHFwQQLPVQ
     accessTokenExpiration: 86400
     refreshTokenExpiration: 2592000
 
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+  profiles:
+    active: dev
+
+server:
+  port: 8080
