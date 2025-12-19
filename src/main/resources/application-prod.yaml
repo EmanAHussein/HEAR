@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:railway}?useSSL=false&serverTimezone=UTC
+    username: ${MYSQLUSER:root}
+    password: ${MYSQLPASSWORD:yprWcmJUqMqujHfaZoJzcurKNOvuKyAP}
+
+  jpa:
+    show-sql: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  flyway:
+    clean-disabled: true
+
+  jwt:
+    secret: ${JWT_SECRET:defaultSecret}
+
+server:
+  port: ${PORT:8080}
+
+logging:
+  level:
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: WARN
+
