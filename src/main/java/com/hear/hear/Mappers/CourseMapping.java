@@ -1,5 +1,6 @@
 package com.hear.hear.Mappers;
 
+import com.hear.hear.dtos.CourseDto;
 import com.hear.hear.dtos.RegisterCourseDto;
 import com.hear.hear.dtos.UpdateCourseDto;
 import com.hear.hear.entities.Course;
@@ -8,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
@@ -22,6 +24,8 @@ public interface CourseMapping {
             @MappingTarget Course course
     );
 
-    RegisterCourseDto toDto(Course course);
-    Set<RegisterCourseDto> toDto(Set<Course> courses);
+    RegisterCourseDto toRegisterDto(Course course);
+    Set<RegisterCourseDto> toRegisterDto(Set<Course> courses);
+    CourseDto toDto(Course course);
+    List<CourseDto> toDto(List<Course> courses);
 }

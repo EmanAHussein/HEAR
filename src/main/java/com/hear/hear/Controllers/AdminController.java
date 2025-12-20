@@ -1,7 +1,11 @@
 package com.hear.hear.Controllers;
 
+import com.hear.hear.Mappers.ClassMapping;
+import com.hear.hear.Mappers.CourseMapping;
 import com.hear.hear.Mappers.FacultyProfileMapping;
 import com.hear.hear.Mappers.StudentProfileMapping;
+import com.hear.hear.Repositories.ClassRepository;
+import com.hear.hear.Repositories.CourseRepository;
 import com.hear.hear.Repositories.FacultyMemRepository;
 import com.hear.hear.Repositories.StudentRepository;
 import com.hear.hear.dtos.*;
@@ -17,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +40,10 @@ public class AdminController {
     private final FacultyMemRepository facultyMemRepository;
     private final FacultyProfileMapping facultyProfileMapping;
     private final StudentProfileMapping studentProfileMapping;
+    private final CourseRepository courseRepository;
+    private final CourseMapping courseMapping;
+    private final ClassRepository classRepository;
+    private final ClassMapping classMapping;
     //----------------------------------------------
 
     @ApiResponse(
@@ -108,6 +117,24 @@ public class AdminController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(facultyMember);
+    }
+
+    @GetMapping("/courses/all/get")
+    public ResponseEntity<?> getAllCourses() {
+        var courses = courseMapping.toDto(courseRepository.findAll());
+        if(courses.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/classes/all/get")
+    public ResponseEntity<?> getAllClasses() {
+        var classes = classMapping.toDto(classRepository.findAll());
+        if(classes.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(classes);
     }
 
     // assign class to student
@@ -192,7 +219,7 @@ public class AdminController {
     }
 
     @PostMapping("/course/add")
-    public ResponseEntity<?> addCourse(@RequestBody RegisterCourseDto registerCourseDto) {
+    public ResponseEntity<?> addCourse(@RequestBody RegisterCourseDto registerCourseDto) throws BadRequestException {
         Course course = courseService.register(registerCourseDto);
         if(course == null) {
             return ResponseEntity.badRequest()
@@ -292,6 +319,13 @@ public class AdminController {
                     .body(Map.of("Error", e.getMessage()));
         }
         return ResponseEntity.ok().body(Map.of("Message", "Class deleted successfully"));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(Map.of("message", ex.getMessage()));
     }
 
 }

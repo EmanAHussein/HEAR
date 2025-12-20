@@ -219,6 +219,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h3>My Profile</h3>
+                            <button class="btn btn-primary btn-small" onclick="showEditProfileModal()">Edit Profile</button>
                         </div>
                         <div id="profileContent">
                             <p class="loading">Loading profile...</p>
@@ -235,6 +236,59 @@
                         </div>
                         <div class="schedule-grid" id="scheduleContent">
                             <p class="loading">Loading schedule...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Courses Management -->
+                <div id="coursesManagementSection" class="content-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>All Courses</h3>
+                            <button class="btn btn-primary btn-small" onclick="loadAllCourses()">Refresh</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Credit Hours</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coursesManagementTableBody">
+                                    <tr><td colspan="5" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classes Management -->
+                <div id="classesManagementSection" class="content-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>All Classes</h3>
+                            <button class="btn btn-primary btn-small" onclick="loadAllClasses()">Refresh</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Day</th>
+                                        <th>Time</th>
+                                        <th>Room</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classesManagementTableBody">
+                                    <tr><td colspan="6" class="loading">Loading...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -273,6 +327,7 @@
             <div class="modal-header">
                 <h3>Add New User</h3>
             </div>
+            <div id="addUserAlert"></div>
             <form id="addUserForm">
                 <div class="form-group">
                     <label>Name</label>
@@ -292,10 +347,32 @@
                 </div>
                 <div class="form-group">
                     <label>Role</label>
-                    <select id="newUserRole" class="form-control" required>
+                    <select id="newUserRole" class="form-control" required onchange="toggleNewUserStudentFields()">
+                        <option value="">Select Role</option>
                         <option value="STUDENT">Student</option>
                         <option value="FACULTYMEMBER">Faculty Member</option>
                     </select>
+                </div>
+                <div id="newUserStudentFields" class="hidden">
+                    <div class="form-group">
+                        <label>Student Code</label>
+                        <input type="number" id="newStudentCode" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Level</label>
+                        <input type="text" id="newCurrentLevel" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select id="newStudentDepartment" class="form-control">
+                            <option value="GENERAL">General</option>
+                            <option value="CS">Computer Science</option>
+                            <option value="IS">Information Systems</option>
+                            <option value="IT">Information Technology</option>
+                            <option value="AI">Artificial Intelligence</option>
+                            <option value="CYSEC">Cyber Security</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">Add User</button>
@@ -304,5 +381,183 @@
             </form>
         </div>
     </div>
-        <script src="./scrypt.js"></script>
-    </body>
+
+    <!-- Add Course Modal -->
+    <div id="addCourseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Course</h3>
+            </div>
+            <div id="addCourseAlert"></div>
+            <form id="addCourseForm">
+                <div class="form-group">
+                    <label>Course Name</label>
+                    <input type="text" id="newCourseName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Course Code</label>
+                    <input type="text" id="newCourseCode" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Credit Hours</label>
+                    <input type="text" id="newCourseCreditHours" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="newCourseDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Add Course</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCourseModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="addClassModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Class</h3>
+            </div>
+            <div id="addClassAlert"></div>
+            <form id="addClassForm">
+                <div class="form-group">
+                    <label>Class Name</label>
+                    <input type="text" id="newClassName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Course</label>
+                    <select id="newClassCourse" class="form-control" required>
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Faculty Member</label>
+                    <select id="newClassFaculty" class="form-control" required>
+                        <option value="">Select Faculty</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="newClassType" class="form-control" required>
+                        <option value="LEC">Lecture</option>
+                        <option value="SEC1">Section 1</option>
+                        <option value="SEC2">Section 2</option>
+                        <option value="SEC3">Section 3</option>
+                        <option value="SEC4">Section 4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Day</label>
+                    <select id="newClassDay" class="form-control" required>
+                        <option value="MONDAY">Monday</option>
+                        <option value="TUESDAY">Tuesday</option>
+                        <option value="WEDNESDAY">Wednesday</option>
+                        <option value="THURSDAY">Thursday</option>
+                        <option value="FRIDAY">Friday</option>
+                        <option value="SATURDAY">Saturday</option>
+                        <option value="SUNDAY">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" id="newClassStartTime" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" id="newClassEndTime" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Room</label>
+                    <input type="text" id="newClassRoom" class="form-control" required>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Add Class</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addClassModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+            </div>
+            <div id="editProfileAlert"></div>
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editProfileName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editProfileEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="editProfilePhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>New Password (leave blank to keep current)</label>
+                    <input type="password" id="editProfilePassword" class="form-control">
+                </div>
+                <div id="editStudentProfileFields" class="hidden">
+                    <div class="form-group">
+                        <label>Student Code</label>
+                        <input type="number" id="editStudentCode" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Level</label>
+                        <input type="text" id="editCurrentLevel" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select id="editStudentDepartment" class="form-control">
+                            <option value="GENERAL">General</option>
+                            <option value="CS">Computer Science</option>
+                            <option value="IS">Information Systems</option>
+                            <option value="IT">Information Technology</option>
+                            <option value="AI">Artificial Intelligence</option>
+                            <option value="CYSEC">Cyber Security</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="editFacultyProfileFields" class="hidden">
+                    <div class="form-group">
+                        <label>Job Title</label>
+                        <input type="text" id="editJobTitle" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Scientific Degree</label>
+                        <input type="text" id="editScientificDegree" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select id="editFacultyDepartment" class="form-control">
+                            <option value="GENERAL">General</option>
+                            <option value="CS">Computer Science</option>
+                            <option value="IS">Information Systems</option>
+                            <option value="IT">Information Technology</option>
+                            <option value="AI">Artificial Intelligence</option>
+                            <option value="CYSEC">Cyber Security</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea id="editBio" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editProfileModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="./scrypt.js"></script>
+</body>
+

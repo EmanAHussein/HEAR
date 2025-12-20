@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'http://localhost:8080';
 let currentUser = null;
 let authToken = null;
@@ -16,6 +15,10 @@ function setupEventListeners() {
     document.getElementById('showLogin').addEventListener('click', showLoginPage);
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('registerRole').addEventListener('change', toggleStudentFields);
+    document.getElementById('addUserForm').addEventListener('submit', handleAddUser);
+    document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
+    document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
+    document.getElementById('editProfileForm').addEventListener('submit', handleEditProfile);
 }
 
 function toggleStudentFields() {
@@ -149,6 +152,8 @@ function setupMenu() {
     menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
+    menuItems += '<div class="menu-item" onclick="showSection(\'coursesManagementSection\')">📚 Courses</div>';
+    menuItems += '<div class="menu-item" onclick="showSection(\'classesManagementSection\')">🏫 Classes</div>';
 
     menu.innerHTML = menuItems;
 }
@@ -174,7 +179,9 @@ function showSection(sectionId) {
         'facultySection': 'Faculty Management',
         'profileSection': 'My Profile',
         'scheduleSection': 'My Schedule',
-        'coursesSection': 'My Courses'
+        'coursesSection': 'My Courses',
+        'coursesManagementSection': 'Courses Management',
+        'classesManagementSection': 'Classes Management'
     };
     document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
 
@@ -185,6 +192,8 @@ function showSection(sectionId) {
     if (sectionId === 'scheduleSection') loadSchedule();
     if (sectionId === 'coursesSection') loadCourses();
     if (sectionId === 'adminDashboard') loadDashboardStats();
+    if (sectionId === 'coursesManagementSection') loadAllCourses();
+    if (sectionId === 'classesManagementSection') loadAllClasses();
 }
 
 async function loadDashboardStats() {
@@ -386,11 +395,292 @@ function showAddUserModal() {
 }
 
 function showAddCourseModal() {
-    alert('Add Course modal - coming soon!');
+    document.getElementById('addCourseModal').classList.add('active');
+    loadCoursesForDropdown();
 }
 
 function showAddClassModal() {
-    alert('Add Class modal - coming soon!');
+    document.getElementById('addClassModal').classList.add('active');
+    loadCoursesAndFacultyForClass();
+}
+
+async function showEditProfileModal() {
+    document.getElementById('editProfileModal').classList.add('active');
+    
+    // Load current profile data
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/profile/get`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            const profile = await response.json();
+            
+            document.getElementById('editProfileName').value = profile.name || currentUser.name;
+            document.getElementById('editProfileEmail').value = currentUser.email;
+            document.getElementById('editProfilePhone').value = currentUser.phone || '';
+            
+            if (currentUser.role === 'STUDENT') {
+                document.getElementById('editStudentProfileFields').classList.remove('hidden');
+                document.getElementById('editFacultyProfileFields').classList.add('hidden');
+                document.getElementById('editStudentCode').value = profile.studentCode || '';
+                document.getElementById('editCurrentLevel').value = profile.currentLevel || '';
+                document.getElementById('editStudentDepartment').value = profile.department || 'GENERAL';
+            } else if (currentUser.role === 'FACULTYMEMBER') {
+                document.getElementById('editFacultyProfileFields').classList.remove('hidden');
+                document.getElementById('editStudentProfileFields').classList.add('hidden');
+                
+                const facultyResponse = await fetch(`${API_BASE_URL}/faculty_member/profile/${currentUser.id}/get`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (facultyResponse.ok) {
+                    const facultyProfile = await facultyResponse.json();
+                    document.getElementById('editJobTitle').value = facultyProfile.jobTitle || '';
+                    document.getElementById('editScientificDegree').value = facultyProfile.scientificDegree || '';
+                    document.getElementById('editFacultyDepartment').value = facultyProfile.department || 'GENERAL';
+                    document.getElementById('editBio').value = facultyProfile.bio || '';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load profile for editing:', error);
+    }
+}
+
+function toggleNewUserStudentFields() {
+    const role = document.getElementById('newUserRole').value;
+    const studentFields = document.getElementById('newUserStudentFields');
+    studentFields.classList.toggle('hidden', role !== 'STUDENT');
+}
+
+async function handleAddUser(e) {
+    e.preventDefault();
+    const role = document.getElementById('newUserRole').value;
+    
+    const userData = {
+        name: document.getElementById('newUserName').value,
+        email: document.getElementById('newUserEmail').value,
+        phone: document.getElementById('newUserPhone').value,
+        password: document.getElementById('newUserPassword').value,
+        role: role,
+        admin: false
+    };
+
+    if (role === 'STUDENT') {
+        userData.profile = {
+            studentCode: parseInt(document.getElementById('newStudentCode').value),
+            currentLevel: document.getElementById('newCurrentLevel').value,
+            department: document.getElementById('newStudentDepartment').value
+        };
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/user/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(userData)
+        });
+
+        if (response.ok) {
+            showModalAlert('addUserAlert', 'User added successfully!', 'success');
+            document.getElementById('addUserForm').reset();
+            setTimeout(() => {
+                closeModal('addUserModal');
+                loadStudents();
+                loadFaculty();
+                loadDashboardStats();
+            }, 1500);
+        } else {
+            showModalAlert('addUserAlert', 'Failed to add user', 'error');
+        }
+    } catch (error) {
+        showModalAlert('addUserAlert', 'Failed to add user', 'error');
+    }
+}
+
+async function handleAddCourse(e) {
+    e.preventDefault();
+    
+    const courseData = {
+        name: document.getElementById('newCourseName').value,
+        code: document.getElementById('newCourseCode').value,
+        creditHours: document.getElementById('newCourseCreditHours').value,
+        description: document.getElementById('newCourseDescription').value
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/course/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(courseData)
+        });
+
+        if (response.ok) {
+            showModalAlert('addCourseAlert', 'Course added successfully!', 'success');
+            document.getElementById('addCourseForm').reset();
+            setTimeout(() => {
+                closeModal('addCourseModal');
+                loadAllCourses();
+                loadDashboardStats();
+            }, 1500);
+        } else {
+            showModalAlert('addCourseAlert', 'Failed to add course', 'error');
+        }
+    } catch (error) {
+        showModalAlert('addCourseAlert', 'Failed to add course', 'error');
+    }
+}
+
+async function handleAddClass(e) {
+    e.preventDefault();
+    
+    const classData = {
+        name: document.getElementById('newClassName').value,
+        courseId: parseInt(document.getElementById('newClassCourse').value),
+        facultyMemberId: parseInt(document.getElementById('newClassFaculty').value),
+        type: document.getElementById('newClassType').value,
+        day: document.getElementById('newClassDay').value,
+        startTime: document.getElementById('newClassStartTime').value,
+        endTime: document.getElementById('newClassEndTime').value,
+        room: document.getElementById('newClassRoom').value
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/class/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(classData)
+        });
+
+        if (response.ok) {
+            showModalAlert('addClassAlert', 'Class added successfully!', 'success');
+            document.getElementById('addClassForm').reset();
+            setTimeout(() => {
+                closeModal('addClassModal');
+                loadAllClasses();
+            }, 1500);
+        } else {
+            showModalAlert('addClassAlert', 'Failed to add class', 'error');
+        }
+    } catch (error) {
+        showModalAlert('addClassAlert', 'Failed to add class', 'error');
+    }
+}
+
+async function handleEditProfile(e) {
+    e.preventDefault();
+    
+    try {
+        // Update user info
+        const userData = {
+            name: document.getElementById('editProfileName').value,
+            email: document.getElementById('editProfileEmail').value,
+            phone: document.getElementById('editProfilePhone').value
+        };
+        
+        const password = document.getElementById('editProfilePassword').value;
+        if (password) {
+            userData.newPassword = password;
+        }
+
+        // Update profile based on role
+        if (currentUser.role === 'STUDENT') {
+            const profileData = {
+                studentCode: parseInt(document.getElementById('editStudentCode').value),
+                currentLevel: document.getElementById('editCurrentLevel').value,
+                department: document.getElementById('editStudentDepartment').value
+            };
+            
+            // Note: Using faculty endpoint as template - adjust if you have student-specific endpoint
+            await fetch(`${API_BASE_URL}/user/profile/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(profileData)
+            });
+        } else if (currentUser.role === 'FACULTYMEMBER') {
+            const profileData = {
+                jobTitle: document.getElementById('editJobTitle').value,
+                department: document.getElementById('editFacultyDepartment').value,
+                scientificDegree: document.getElementById('editScientificDegree').value,
+                bio: document.getElementById('editBio').value
+            };
+            
+            await fetch(`${API_BASE_URL}/faculty_member/profile/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(profileData)
+            });
+        }
+
+        showModalAlert('editProfileAlert', 'Profile updated successfully!', 'success');
+        setTimeout(() => {
+            closeModal('editProfileModal');
+            loadProfile();
+        }, 1500);
+    } catch (error) {
+        showModalAlert('editProfileAlert', 'Failed to update profile', 'error');
+    }
+}
+
+async function loadCoursesAndFacultyForClass() {
+    try {
+        // Load all courses (you may need to create this endpoint or use existing one)
+        const courseSelect = document.getElementById('newClassCourse');
+        courseSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        // Load faculty
+        const facultyResponse = await fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (facultyResponse.ok) {
+            const faculty = await facultyResponse.json();
+            const facultySelect = document.getElementById('newClassFaculty');
+            facultySelect.innerHTML = '<option value="">Select Faculty</option>' +
+                faculty.map(f => `<option value="${f.facultyMemberId}">${f.name}</option>`).join('');
+        }
+        
+        // For courses - you may need to implement a get all courses endpoint
+        courseSelect.innerHTML = '<option value="">Select Course (Implement endpoint)</option>';
+    } catch (error) {
+        console.error('Failed to load data for class form:', error);
+    }
+}
+
+async function loadAllCourses() {
+    // Note: You may need to implement this endpoint in your backend
+    // For now, showing placeholder
+    const tbody = document.getElementById('coursesManagementTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Course management endpoint needed</td></tr>';
+}
+
+async function loadAllClasses() {
+    // Note: You may need to implement this endpoint in your backend
+    // For now, showing placeholder
+    const tbody = document.getElementById('classesManagementTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Class management endpoint needed</td></tr>';
+}
+
+function showModalAlert(elementId, message, type) {
+    const alertDiv = document.getElementById(elementId);
+    alertDiv.innerHTML = `<div class="alert alert-${type === 'error' ? 'error' : 'success'}">${message}</div>`;
+    setTimeout(() => alertDiv.innerHTML = '', 5000);
 }
 
 function closeModal(modalId) {

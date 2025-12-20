@@ -24,7 +24,7 @@ public class StudentController {
 
     @GetMapping("/courses/get")
     public ResponseEntity<Set<RegisterCourseDto>> getCourses(){
-        var courses= courseMapping.toDto(studentRepository.findCoursesForStudentByStudentId(authService.getCurrentUser().getId()));
+        var courses= courseMapping.toRegisterDto(studentRepository.findCoursesForStudentByStudentId(authService.getCurrentUser().getId()));
         if(courses==null){
             return ResponseEntity.notFound().build();
         }
