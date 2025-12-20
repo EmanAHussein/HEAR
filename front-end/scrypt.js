@@ -2,7 +2,6 @@ const API_BASE_URL = 'http://localhost:8080';
 let currentUser = null;
 let authToken = null;
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
@@ -19,12 +18,17 @@ function setupEventListeners() {
     document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
     document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
     document.getElementById('editProfileForm').addEventListener('submit', handleEditProfile);
+    document.getElementById('editStudentForm').addEventListener('submit', handleEditStudent);
+    document.getElementById('editFacultyForm').addEventListener('submit', handleEditFaculty);
+    document.getElementById('editCourseForm').addEventListener('submit', handleEditCourse);
+    document.getElementById('editClassForm').addEventListener('submit', handleEditClass);
+    document.getElementById('enrollStudentForm').addEventListener('submit', handleEnrollStudent);
 }
 
 function toggleStudentFields() {
     const role = document.getElementById('registerRole').value;
-    const studentFields = document.getElementById('studentFields');
-    studentFields.classList.toggle('hidden', role !== 'STUDENT');
+    document.getElementById('studentFields').classList.toggle('hidden', role !== 'STUDENT');
+    document.getElementById('facultyFields').classList.toggle('hidden', role !== 'FACULTYMEMBER');
 }
 
 function showRegisterPage(e) {
@@ -65,26 +69,85 @@ async function handleLogin(e) {
     }
 }
 
+// async function handleRegister(e) {
+//     e.preventDefault();
+//     const role = document.getElementById('registerRole').value;
+    
+//     const userData = {
+//         name: document.getElementById('registerName').value,
+//         email: document.getElementById('registerEmail').value,
+//         phone: document.getElementById('registerPhone').value,
+//         password: document.getElementById('registerPassword').value,
+//         role: role,
+//         admin: false
+//     };
+
+//     if (role === 'STUDENT') {
+//         userData.profile = {
+//             studentCode: parseInt(document.getElementById('studentCode').value),
+//             currentLevel: document.getElementById('currentLevel').value,
+//             department: document.getElementById('studentDepartment').value
+//         };
+//     } else if (role === 'FACULTYMEMBER') {
+//         userData.profile = {
+//             jobTitle: document.getElementById('facultyJobTitle').value,
+//             department: document.getElementById('facultyDepartment').value,
+//             scientificDegree: document.getElementById('facultyDegree').value,
+//             bio: document.getElementById('facultyBio').value
+//         };
+//     }
+
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/auth/register`, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify(userData)
+//         });
+
+//         if (response.ok) {
+//             showAlert('registerAlert', 'Registration successful! Please login.', 'success');
+//             setTimeout(() => {
+//                 document.getElementById('registerForm').reset();
+//                 showLoginPage({ preventDefault: () => {} });
+//             }, 2000);
+//         } else {
+//             showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
+//         }
+//     } catch (error) {
+//         showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
+//     }
+// }
+
 async function handleRegister(e) {
     e.preventDefault();
     const role = document.getElementById('registerRole').value;
-    
+
     const userData = {
-        name: document.getElementById('registerName').value,
-        email: document.getElementById('registerEmail').value,
-        phone: document.getElementById('registerPhone').value,
+        name: document.getElementById('registerName').value.trim(),
+        email: document.getElementById('registerEmail').value.trim(),
+        phone: document.getElementById('registerPhone').value.trim(),
         password: document.getElementById('registerPassword').value,
         role: role,
-        admin: false
+        isAdmin: false
     };
 
     if (role === 'STUDENT') {
+        const studentCodeVal = document.getElementById('studentCode').value.trim();
         userData.profile = {
-            studentCode: parseInt(document.getElementById('studentCode').value),
-            currentLevel: document.getElementById('currentLevel').value,
-            department: document.getElementById('studentDepartment').value
+            studentCode: studentCodeVal ? parseInt(studentCodeVal) : 0,
+            currentLevel: document.getElementById('currentLevel').value.trim(),
+            department: document.getElementById('studentDepartment').value.trim()
+        };
+    } else if (role === 'FACULTYMEMBER') {
+        userData.profile = {
+            jobTitle: document.getElementById('facultyJobTitle').value.trim(),
+            department: document.getElementById('facultyDepartment').value.trim(),
+            scientificDegree: document.getElementById('facultyDegree').value.trim(),
+            bio: document.getElementById('facultyBio').value.trim()
         };
     }
+
+    console.log('Register payload:', JSON.stringify(userData, null, 2));
 
     try {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -95,14 +158,21 @@ async function handleRegister(e) {
 
         if (response.ok) {
             showAlert('registerAlert', 'Registration successful! Please login.', 'success');
-            setTimeout(showLoginPage, 2000);
+            setTimeout(() => {
+                document.getElementById('registerForm').reset();
+                showLoginPage({ preventDefault: () => {} });
+            }, 2000);
         } else {
+            const errText = await response.text();
+            console.error('Registration failed:', errText);
             showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
         }
     } catch (error) {
+        console.error('Register request error:', error);
         showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
     }
 }
+
 
 async function loadUserProfile() {
     try {
@@ -137,18 +207,13 @@ function setupMenu() {
     const menu = document.getElementById('sidebarMenu');
     let menuItems = '';
 
-    // Common menu items
     menuItems += '<div class="menu-item" onclick="showSection(\'profileSection\')">👤 My Profile</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'scheduleSection\')">📅 My Schedule</div>';
 
-    // Role-specific menu items
-    if (currentUser.role === 'STUDENT') {
-        menuItems += '<div class="menu-item" onclick="showSection(\'coursesSection\')">📚 My Courses</div>';
-    } else if (currentUser.role === 'FACULTYMEMBER') {
-        // Faculty specific items
-    }
+    // if (currentUser.role === 'STUDENT') {
+    //     menuItems += '<div class="menu-item" onclick="showSection(\'coursesSection\')">📚 My Courses</div>';
+    // }
 
-    // Admin menu (if user is admin)
     menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
@@ -158,57 +223,136 @@ function setupMenu() {
     menu.innerHTML = menuItems;
 }
 
+// function setupMenu() {
+//     const menu = document.getElementById('sidebarMenu');
+//     let menuItems = '';
+
+//     // Always visible
+//     menuItems += '<div class="menu-item" onclick="showSection(\'profileSection\')">👤 My Profile</div>';
+//     menuItems += '<div class="menu-item" onclick="showSection(\'scheduleSection\')">📅 My Schedule</div>';
+
+//     // ADMIN ONLY
+//     if (currentUser.isAdmin === true) {
+//         menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
+//         menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
+//         menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
+//         menuItems += '<div class="menu-item" onclick="showSection(\'coursesManagementSection\')">📚 Courses</div>';
+//         menuItems += '<div class="menu-item" onclick="showSection(\'classesManagementSection\')">🏫 Classes</div>';
+//     }
+
+//     menu.innerHTML = menuItems;
+// }
+
+// setupMenu();
+
+
+
 function showSection(sectionId) {
-    // Hide all sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
 
-    // Remove active class from all menu items
     document.querySelectorAll('.menu-item').forEach(item => {
         item.classList.remove('active');
     });
 
-    // Show selected section
     document.getElementById(sectionId).classList.add('active');
 
-    // Update page title
     const titles = {
         'adminDashboard': 'Dashboard',
         'studentsSection': 'Students Management',
         'facultySection': 'Faculty Management',
         'profileSection': 'My Profile',
         'scheduleSection': 'My Schedule',
-        'coursesSection': 'My Courses',
+        // 'coursesSection': 'My Courses',
         'coursesManagementSection': 'Courses Management',
         'classesManagementSection': 'Classes Management'
     };
     document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
 
-    // Load section data
     if (sectionId === 'studentsSection') loadStudents();
     if (sectionId === 'facultySection') loadFaculty();
     if (sectionId === 'profileSection') loadProfile();
     if (sectionId === 'scheduleSection') loadSchedule();
-    if (sectionId === 'coursesSection') loadCourses();
+    // if (sectionId === 'coursesSection') loadCourses();
     if (sectionId === 'adminDashboard') loadDashboardStats();
     if (sectionId === 'coursesManagementSection') loadAllCourses();
     if (sectionId === 'classesManagementSection') loadAllClasses();
 }
 
+// function showSection(sectionId) {
+//     const adminSections = [
+//         'adminDashboard',
+//         'studentsSection',
+//         'facultySection',
+//         'coursesManagementSection',
+//         'classesManagementSection'
+//     ];
+
+//     if (!currentUser.isAdmin && adminSections.includes(sectionId)) {
+//         // Force non-admins back to schedule
+//         showSection('scheduleSection');
+//         return;
+//     }
+
+//     document.querySelectorAll('.content-section').forEach(section => {
+//         section.classList.remove('active');
+//     });
+
+//     document.querySelectorAll('.menu-item').forEach(item => {
+//         item.classList.remove('active');
+//     });
+
+//     document.getElementById(sectionId).classList.add('active');
+
+//     const titles = {
+//         adminDashboard: 'Dashboard',
+//         studentsSection: 'Students Management',
+//         facultySection: 'Faculty Management',
+//         profileSection: 'My Profile',
+//         scheduleSection: 'My Schedule',
+//         coursesManagementSection: 'Courses Management',
+//         classesManagementSection: 'Classes Management'
+//     };
+
+//     document.getElementById('pageTitle').textContent =
+//         titles[sectionId] || 'Dashboard';
+
+//     // loaders
+//     if (sectionId === 'studentsSection') loadStudents();
+//     if (sectionId === 'facultySection') loadFaculty();
+//     if (sectionId === 'profileSection') loadProfile();
+//     if (sectionId === 'scheduleSection') loadSchedule();
+//     if (sectionId === 'adminDashboard') loadDashboardStats();
+//     if (sectionId === 'coursesManagementSection') loadAllCourses();
+//     if (sectionId === 'classesManagementSection') loadAllClasses();
+// }
+
+
+// if (currentUser.isAdmin === true) {
+//     showSection('adminDashboard');
+// } else {
+//     showSection('scheduleSection');
+// }
+
+
 async function loadDashboardStats() {
     try {
-        const [students, faculty] = await Promise.all([
+        const [students, faculty, courses] = await Promise.all([
             fetch(`${API_BASE_URL}/admin/students/all/get`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             }).then(r => r.json()),
             fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
-            }).then(r => r.json())
+            }).then(r => r.json()),
+            fetch(`${API_BASE_URL}/admin/courses/all/get`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }).then(r => r.json()).catch(() => [])
         ]);
 
         document.getElementById('totalStudents').textContent = students.length;
         document.getElementById('totalFaculty').textContent = faculty.length;
+        document.getElementById('totalCourses').textContent = courses.length;
     } catch (error) {
         console.error('Failed to load stats:', error);
     }
@@ -237,6 +381,8 @@ async function loadStudents() {
                     <td>${student.currentLevel}</td>
                     <td><span class="badge badge-student">${student.department}</span></td>
                     <td>
+                        <button class="btn btn-primary btn-small" onclick="showEditStudentModal(${student.userId}, ${student.studentId})">Edit</button>
+                        <button class="btn btn-success btn-small" onclick="showEnrollStudentModal(${student.studentId})">Enroll</button>
                         <button class="btn btn-danger btn-small" onclick="deleteUser(${student.userId})">Delete</button>
                     </td>
                 </tr>
@@ -270,6 +416,7 @@ async function loadFaculty() {
                     <td>${member.scientificDegree || 'N/A'}</td>
                     <td><span class="badge badge-faculty">${member.department}</span></td>
                     <td>
+                        <button class="btn btn-primary btn-small" onclick="showEditFacultyModal(${member.userId}, ${member.facultyMemberId})">Edit</button>
                         <button class="btn btn-danger btn-small" onclick="deleteUser(${member.userId})">Delete</button>
                     </td>
                 </tr>
@@ -301,6 +448,13 @@ async function loadProfile() {
                     <div><strong>Student Code:</strong> ${profile.studentCode}</div>
                     <div><strong>Current Level:</strong> ${profile.currentLevel}</div>
                     <div><strong>Department:</strong> ${profile.department}</div>
+                `;
+            } else if (profile.jobTitle !== undefined) {
+                html += `
+                    <div><strong>Job Title:</strong> ${profile.jobTitle || 'N/A'}</div>
+                    <div><strong>Scientific Degree:</strong> ${profile.scientificDegree || 'N/A'}</div>
+                    <div><strong>Department:</strong> ${profile.department}</div>
+                    <div><strong>Bio:</strong> ${profile.bio || 'N/A'}</div>
                 `;
             }
 
@@ -342,32 +496,153 @@ async function loadSchedule() {
     }
 }
 
-async function loadCourses() {
+// async function loadCourses() {
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/student/courses/get`, {
+//             headers: { 'Authorization': `Bearer ${authToken}` }
+//         });
+
+//         if (response.ok) {
+//             const courses = await response.json();
+//             const tbody = document.getElementById('coursesTableBody');
+            
+//             if (courses.length === 0) {
+//                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No courses enrolled</td></tr>';
+//                 return;
+//             }
+
+//             tbody.innerHTML = courses.map(course => `
+//                 <tr>
+//                     <td>${course.name}</td>
+//                     <td>${course.code}</td>
+//                     <td>${course.creditHours}</td>
+//                     <td>${course.description || 'N/A'}</td>
+//                 </tr>
+//             `).join('');
+//         }
+//     } catch (error) {
+//         document.getElementById('coursesTableBody').innerHTML = '<tr><td colspan="4">Failed to load courses</td></tr>';
+//     }
+// }
+
+// async function loadAllCourses() {
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/student/courses/get`, {
+//             headers: { 'Authorization': `Bearer ${authToken}` }
+//         });
+
+//         if (response.ok) {
+//             const courses = await response.json();
+//             const tbody = document.getElementById('coursesManagementTableBody');
+            
+//             if (courses.length === 0) {
+//                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No courses found</td></tr>';
+//                 return;
+//             }
+
+//             tbody.innerHTML = courses.map(course => `
+//                 <tr>
+//                     <td>${course.name}</td>
+//                     <td>${course.code}</td>
+//                     <td>${course.creditHours}</td>
+//                     <td>${course.description || 'N/A'}</td>
+//                     <td>
+//                         <button class="btn btn-primary btn-small" onclick="showEditCourseModal(${course.courseId || course.id}, '${course.name}', '${course.code}', '${course.creditHours}', '${course.description || ''}')">Edit</button>
+//                         <button class="btn btn-danger btn-small" onclick="deleteCourse(${course.courseId || course.id})">Delete</button>
+//                     </td>
+//                 </tr>
+//             `).join('');
+//         }
+//     } catch (error) {
+//         console.error('Failed to load courses:', error);
+//     }
+// }
+
+async function loadAllCourses() {
     try {
-        const response = await fetch(`${API_BASE_URL}/student/courses/get`, {
+        const response = await fetch(`${API_BASE_URL}/admin/courses/all/get`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch courses');
+
+        const courses = await response.json();
+        const tbody = document.getElementById('coursesManagementTableBody');
+
+        if (!courses || courses.length === 0) {
+            tbody.innerHTML =
+                '<tr><td colspan="5" style="text-align:center;">No courses found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = courses.map(course => `
+            <tr>
+                <td>${course.name}</td>
+                <td>${course.code}</td>
+                <td>${course.creditHours}</td>
+                <td>${course.description || 'N/A'}</td>
+                <td>
+                    <button class="btn btn-primary btn-small"
+                        onclick="showEditCourseModal(
+                            ${course.id},
+                            '${course.name}',
+                            '${course.code}',
+                            ${course.creditHours},
+                            '${course.description || ''}'
+                        )">
+                        Edit
+                    </button>
+                    <button class="btn btn-danger btn-small"
+                        onclick="deleteCourse(${course.id})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load all courses:', error);
+    }
+}
+
+
+async function loadAllClasses() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/classes/all/get`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
         if (response.ok) {
-            const courses = await response.json();
-            const tbody = document.getElementById('coursesTableBody');
+            const classes = await response.json();
+            const tbody = document.getElementById('classesManagementTableBody');
             
-            if (courses.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No courses enrolled</td></tr>';
+            if (classes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No classes found</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = courses.map(course => `
+            tbody.innerHTML = classes.map(cls => `
                 <tr>
-                    <td>${course.name}</td>
-                    <td>${course.code}</td>
-                    <td>${course.creditHours}</td>
-                    <td>${course.description || 'N/A'}</td>
+                    <td>${cls.name}</td>
+                    <td>${cls.type}</td>
+                    <td>${cls.day}</td>
+                    <td>${cls.startTime} - ${cls.endTime}</td>
+                    <td>${cls.room}</td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="showEditClassModal(
+                        ${cls.classId || cls.id},
+                        '${cls.startTime}',
+                        '${cls.endTime}',
+                        '${cls.room}',
+                        '${cls.day}',
+                        ${cls.facultyMemberId}
+                        )">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteClass(${cls.classId || cls.id})">Delete</button>
+                    </td>
                 </tr>
             `).join('');
         }
     } catch (error) {
-        document.getElementById('coursesTableBody').innerHTML = '<tr><td colspan="4">Failed to load courses</td></tr>';
+        console.error('Failed to load classes:', error);
     }
 }
 
@@ -384,9 +659,47 @@ async function deleteUser(userId) {
             alert('User deleted successfully');
             loadStudents();
             loadFaculty();
+            loadDashboardStats();
         }
     } catch (error) {
         alert('Failed to delete user');
+    }
+}
+
+async function deleteCourse(courseId) {
+    if (!confirm('Are you sure you want to delete this course?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/course/${courseId}/delete`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            alert('Course deleted successfully');
+            loadAllCourses();
+            loadDashboardStats();
+        }
+    } catch (error) {
+        alert('Failed to delete course');
+    }
+}
+
+async function deleteClass(classId) {
+    if (!confirm('Are you sure you want to delete this class?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/class/${classId}/delete`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            alert('Class deleted successfully');
+            loadAllClasses();
+        }
+    } catch (error) {
+        alert('Failed to delete class');
     }
 }
 
@@ -396,62 +709,17 @@ function showAddUserModal() {
 
 function showAddCourseModal() {
     document.getElementById('addCourseModal').classList.add('active');
-    loadCoursesForDropdown();
 }
 
-function showAddClassModal() {
+async function showAddClassModal() {
     document.getElementById('addClassModal').classList.add('active');
-    loadCoursesAndFacultyForClass();
-}
-
-async function showEditProfileModal() {
-    document.getElementById('editProfileModal').classList.add('active');
-    
-    // Load current profile data
-    try {
-        const response = await fetch(`${API_BASE_URL}/user/profile/get`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        if (response.ok) {
-            const profile = await response.json();
-            
-            document.getElementById('editProfileName').value = profile.name || currentUser.name;
-            document.getElementById('editProfileEmail').value = currentUser.email;
-            document.getElementById('editProfilePhone').value = currentUser.phone || '';
-            
-            if (currentUser.role === 'STUDENT') {
-                document.getElementById('editStudentProfileFields').classList.remove('hidden');
-                document.getElementById('editFacultyProfileFields').classList.add('hidden');
-                document.getElementById('editStudentCode').value = profile.studentCode || '';
-                document.getElementById('editCurrentLevel').value = profile.currentLevel || '';
-                document.getElementById('editStudentDepartment').value = profile.department || 'GENERAL';
-            } else if (currentUser.role === 'FACULTYMEMBER') {
-                document.getElementById('editFacultyProfileFields').classList.remove('hidden');
-                document.getElementById('editStudentProfileFields').classList.add('hidden');
-                
-                const facultyResponse = await fetch(`${API_BASE_URL}/faculty_member/profile/${currentUser.id}/get`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                
-                if (facultyResponse.ok) {
-                    const facultyProfile = await facultyResponse.json();
-                    document.getElementById('editJobTitle').value = facultyProfile.jobTitle || '';
-                    document.getElementById('editScientificDegree').value = facultyProfile.scientificDegree || '';
-                    document.getElementById('editFacultyDepartment').value = facultyProfile.department || 'GENERAL';
-                    document.getElementById('editBio').value = facultyProfile.bio || '';
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Failed to load profile for editing:', error);
-    }
+    await loadCoursesAndFacultyForClass();
 }
 
 function toggleNewUserStudentFields() {
     const role = document.getElementById('newUserRole').value;
-    const studentFields = document.getElementById('newUserStudentFields');
-    studentFields.classList.toggle('hidden', role !== 'STUDENT');
+    document.getElementById('newUserStudentFields').classList.toggle('hidden', role !== 'STUDENT');
+    document.getElementById('newUserFacultyFields').classList.toggle('hidden', role !== 'FACULTYMEMBER');
 }
 
 async function handleAddUser(e) {
@@ -464,7 +732,7 @@ async function handleAddUser(e) {
         phone: document.getElementById('newUserPhone').value,
         password: document.getElementById('newUserPassword').value,
         role: role,
-        admin: false
+        isAdmin: document.getElementById('newUserAdmin').checked
     };
 
     if (role === 'STUDENT') {
@@ -472,6 +740,13 @@ async function handleAddUser(e) {
             studentCode: parseInt(document.getElementById('newStudentCode').value),
             currentLevel: document.getElementById('newCurrentLevel').value,
             department: document.getElementById('newStudentDepartment').value
+        };
+    } else if (role === 'FACULTYMEMBER') {
+        userData.profile = {
+            jobTitle: document.getElementById('newFacultyJobTitle').value,
+            department: document.getElementById('newFacultyDepartment').value,
+            scientificDegree: document.getElementById('newFacultyDegree').value,
+            bio: document.getElementById('newFacultyBio').value
         };
     }
 
@@ -504,13 +779,30 @@ async function handleAddUser(e) {
 
 async function handleAddCourse(e) {
     e.preventDefault();
-    
+
+    if (!authToken) {
+        showModalAlert('addCourseAlert', 'You are not logged in', 'error');
+        return;
+    }
+
+    const nameEl = document.getElementById('newCourseName');
+    const codeEl = document.getElementById('newCourseCode');
+    const creditEl = document.getElementById('newCourseCreditHours');
+    const descEl = document.getElementById('newCourseDescription');
+
+    if (!nameEl || !codeEl || !creditEl || !descEl) {
+        console.error("Add course inputs missing");
+        return;
+    }
+
     const courseData = {
-        name: document.getElementById('newCourseName').value,
-        code: document.getElementById('newCourseCode').value,
-        creditHours: document.getElementById('newCourseCreditHours').value,
-        description: document.getElementById('newCourseDescription').value
+        name: nameEl.value.trim(),
+        code: codeEl.value.trim(),
+        creditHours: Number(creditEl.value),
+        description: descEl.value.trim()
     };
+
+    console.log("Sending course:", courseData);
 
     try {
         const response = await fetch(`${API_BASE_URL}/admin/course/add`, {
@@ -531,12 +823,16 @@ async function handleAddCourse(e) {
                 loadDashboardStats();
             }, 1500);
         } else {
-            showModalAlert('addCourseAlert', 'Failed to add course', 'error');
+            const err = await response.text();
+            console.error(err);
+            showModalAlert('addCourseAlert', err || 'Failed to add course', 'error');
         }
     } catch (error) {
-        showModalAlert('addCourseAlert', 'Failed to add course', 'error');
+        console.error(error);
+        showModalAlert('addCourseAlert', 'Network error', 'error');
     }
 }
+
 
 async function handleAddClass(e) {
     e.preventDefault();
@@ -577,23 +873,45 @@ async function handleAddClass(e) {
     }
 }
 
+async function showEditProfileModal() {
+    document.getElementById('editProfileModal').classList.add('active');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/profile/get`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            const profile = await response.json();
+            
+            document.getElementById('editProfileName').value = profile.name || currentUser.name;
+            document.getElementById('editProfileEmail').value = currentUser.email;
+            document.getElementById('editProfilePhone').value = currentUser.phone || '';
+            
+            if (currentUser.role === 'STUDENT') {
+                document.getElementById('editStudentProfileFields').classList.remove('hidden');
+                document.getElementById('editFacultyProfileFields').classList.add('hidden');
+                document.getElementById('editStudentCode').value = profile.studentCode || '';
+                document.getElementById('editCurrentLevel').value = profile.currentLevel || '';
+                document.getElementById('editStudentDepartment').value = profile.department || 'GENERAL';
+            } else if (currentUser.role === 'FACULTYMEMBER') {
+                document.getElementById('editFacultyProfileFields').classList.remove('hidden');
+                document.getElementById('editStudentProfileFields').classList.add('hidden');
+                document.getElementById('editJobTitle').value = profile.jobTitle || '';
+                document.getElementById('editScientificDegree').value = profile.scientificDegree || '';
+                document.getElementById('editFacultyDepartment').value = profile.department || 'GENERAL';
+                document.getElementById('editBio').value = profile.bio || '';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load profile for editing:', error);
+    }
+}
+
 async function handleEditProfile(e) {
     e.preventDefault();
     
     try {
-        // Update user info
-        const userData = {
-            name: document.getElementById('editProfileName').value,
-            email: document.getElementById('editProfileEmail').value,
-            phone: document.getElementById('editProfilePhone').value
-        };
-        
-        const password = document.getElementById('editProfilePassword').value;
-        if (password) {
-            userData.newPassword = password;
-        }
-
-        // Update profile based on role
         if (currentUser.role === 'STUDENT') {
             const profileData = {
                 studentCode: parseInt(document.getElementById('editStudentCode').value),
@@ -601,7 +919,6 @@ async function handleEditProfile(e) {
                 department: document.getElementById('editStudentDepartment').value
             };
             
-            // Note: Using faculty endpoint as template - adjust if you have student-specific endpoint
             await fetch(`${API_BASE_URL}/user/profile/update`, {
                 method: 'PUT',
                 headers: {
@@ -638,44 +955,371 @@ async function handleEditProfile(e) {
     }
 }
 
-async function loadCoursesAndFacultyForClass() {
+async function showEditStudentModal(userId, studentId) {
+    document.getElementById('editStudentModal').classList.add('active');
+    document.getElementById('editStudentUserId').value = userId;
+    
     try {
-        // Load all courses (you may need to create this endpoint or use existing one)
-        const courseSelect = document.getElementById('newClassCourse');
-        courseSelect.innerHTML = '<option value="">Loading...</option>';
-        
-        // Load faculty
-        const facultyResponse = await fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
+        const response = await fetch(`${API_BASE_URL}/admin/students/${studentId}/get`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
-        if (facultyResponse.ok) {
-            const faculty = await facultyResponse.json();
-            const facultySelect = document.getElementById('newClassFaculty');
-            facultySelect.innerHTML = '<option value="">Select Faculty</option>' +
-                faculty.map(f => `<option value="${f.facultyMemberId}">${f.name}</option>`).join('');
+
+        if (response.ok) {
+            const student = await response.json();
+            document.getElementById('editStudentCodeModal').value = student.studentCode;
+            document.getElementById('editCurrentLevelModal').value = student.currentLevel;
+            document.getElementById('editStudentDepartmentModal').value = student.department;
         }
-        
-        // For courses - you may need to implement a get all courses endpoint
-        courseSelect.innerHTML = '<option value="">Select Course (Implement endpoint)</option>';
     } catch (error) {
-        console.error('Failed to load data for class form:', error);
+        console.error('Failed to load student data:', error);
     }
 }
 
-async function loadAllCourses() {
-    // Note: You may need to implement this endpoint in your backend
-    // For now, showing placeholder
-    const tbody = document.getElementById('coursesManagementTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Course management endpoint needed</td></tr>';
+async function handleEditStudent(e) {
+    e.preventDefault();
+    const userId = document.getElementById('editStudentUserId').value;
+    
+    const profileData = {
+        role: 'STUDENT',
+        updateStudentProfile: {
+            studentCode: parseInt(document.getElementById('editStudentCodeModal').value),
+            currentLevel: document.getElementById('editCurrentLevelModal').value,
+            department: document.getElementById('editStudentDepartmentModal').value
+        }
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/profile/update`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(profileData)
+        });
+
+        if (response.ok) {
+            showModalAlert('editStudentAlert', 'Student updated successfully!', 'success');
+            setTimeout(() => {
+                closeModal('editStudentModal');
+                loadStudents();
+            }, 1500);
+        } else {
+            showModalAlert('editStudentAlert', 'Failed to update student', 'error');
+        }
+    } catch (error) {
+        showModalAlert('editStudentAlert', 'Failed to update student', 'error');
+    }
 }
 
-async function loadAllClasses() {
-    // Note: You may need to implement this endpoint in your backend
-    // For now, showing placeholder
-    const tbody = document.getElementById('classesManagementTableBody');
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Class management endpoint needed</td></tr>';
+async function showEditFacultyModal(userId, facultyId) {
+    document.getElementById('editFacultyModal').classList.add('active');
+    document.getElementById('editFacultyUserId').value = userId;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/faculty_member/profile/${facultyId}/get`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            const faculty = await response.json();
+            document.getElementById('editFacultyJobTitleModal').value = faculty.jobTitle || '';
+            document.getElementById('editFacultyDegreeModal').value = faculty.scientificDegree || '';
+            document.getElementById('editFacultyDepartmentModal').value = faculty.department || 'GENERAL';
+            document.getElementById('editFacultyBioModal').value = faculty.bio || '';
+        }
+    } catch (error) {
+        console.error('Failed to load faculty data:', error);
+    }
 }
+
+async function handleEditFaculty(e) {
+    e.preventDefault();
+    const userId = document.getElementById('editFacultyUserId').value;
+    
+    const profileData = {
+        role: 'FACULTYMEMBER',
+        updateFacultyProfile: {
+            jobTitle: document.getElementById('editFacultyJobTitleModal').value,
+            department: document.getElementById('editFacultyDepartmentModal').value,
+            scientificDegree: document.getElementById('editFacultyDegreeModal').value,
+            bio: document.getElementById('editFacultyBioModal').value
+        }
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/profile/update`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(profileData)
+        });
+
+        if (response.ok) {
+            showModalAlert('editFacultyAlert', 'Faculty member updated successfully!', 'success');
+            setTimeout(() => {
+                closeModal('editFacultyModal');
+                loadFaculty();
+            }, 1500);
+        } else {
+            showModalAlert('editFacultyAlert', 'Failed to update faculty member', 'error');
+        }
+    } catch (error) {
+        showModalAlert('editFacultyAlert', 'Failed to update faculty member', 'error');
+    }
+}
+
+function showEditCourseModal(courseId, name, code, creditHours, description) {
+    document.getElementById('editCourseModal').classList.add('active');
+    document.getElementById('editCourseId').value = courseId;
+    document.getElementById('editCourseName').value = name;
+    document.getElementById('editCourseCode').value = code;
+    document.getElementById('editCourseCreditHours').value = creditHours;
+    document.getElementById('editCourseDescription').value = description;
+}
+
+async function handleEditCourse(e) {
+    e.preventDefault();
+    const courseId = document.getElementById('editCourseId').value;
+    
+    const courseData = {
+        name: document.getElementById('editCourseName').value,
+        code: document.getElementById('editCourseCode').value,
+        creditHours: document.getElementById('editCourseCreditHours').value,
+        description: document.getElementById('editCourseDescription').value
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/course/${courseId}/update`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(courseData)
+        });
+
+        if (response.ok) {
+            showModalAlert('editCourseAlert', 'Course updated successfully!', 'success');
+            setTimeout(() => {
+                closeModal('editCourseModal');
+                loadAllCourses();
+            }, 1500);
+        } else {
+            showModalAlert('editCourseAlert', 'Failed to update course', 'error');
+        }
+    } catch (error) {
+        showModalAlert('editCourseAlert', 'Failed to update course', 'error');
+    }
+}
+
+// async function showEditClassModal(classId, startTime, endTime, room, day, facultyMemberId) {
+//     document.getElementById('editClassModal').classList.add('active');
+//     document.getElementById('editClassId').value = classId;
+//     document.getElementById('editClassStartTime').value = startTime;
+//     document.getElementById('editClassEndTime').value = endTime;
+//     document.getElementById('editClassRoom').value = room;
+//     document.getElementById('editClassDay').value = day;
+//     document.getElementById('editClassFaculty').value = facultyMemberId;
+// }
+
+async function showEditClassModal(
+    classId,
+    startTime,
+    endTime,
+    room,
+    day,
+    facultyMemberId
+) {
+    document.getElementById('editClassModal').classList.add('active');
+
+    await loadCoursesAndFacultyForClass();
+
+    document.getElementById('editClassId').value = classId;
+    document.getElementById('editClassStartTime').value = startTime;
+    document.getElementById('editClassEndTime').value = endTime;
+    document.getElementById('editClassRoom').value = room;
+    document.getElementById('editClassDay').value = day;
+
+    document.getElementById('editClassFaculty').value = facultyMemberId;
+
+    // selectedEditFacultyId = facultyMemberId;
+}
+
+async function handleEditClass(e) {
+    e.preventDefault();
+    const classId = document.getElementById('editClassId').value;
+    
+    const classData = {
+        startTime: document.getElementById('editClassStartTime').value,
+        endTime: document.getElementById('editClassEndTime').value,
+        room: document.getElementById('editClassRoom').value,
+        day: document.getElementById('editClassDay').value,
+        facultyMemberId: parseInt(document.getElementById('editClassFaculty').value)
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/class/${classId}/update`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(classData)
+        });
+
+        if (response.ok) {
+            showModalAlert('editClassAlert', 'Class updated successfully!', 'success');
+            setTimeout(() => {
+                closeModal('editClassModal');
+                loadAllClasses();
+            }, 1500);
+        } else {
+            showModalAlert('editClassAlert', 'Failed to update class', 'error');
+        }
+    } catch (error) {
+        showModalAlert('editClassAlert', 'Failed to update class', 'error');
+    }
+}
+
+async function showEnrollStudentModal(studentId) {
+    document.getElementById('enrollStudentModal').classList.add('active');
+    document.getElementById('enrollStudentId').value = studentId;
+    
+    try {
+        const [coursesRes, classesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/student/courses/get`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE_URL}/admin/classes/all/get`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+        
+        if (classesRes.ok) {
+            const classes = await classesRes.json();
+            const classSelect = document.getElementById('enrollClassId');
+            classSelect.innerHTML = '<option value="">Select Class</option>' +
+                classes.map(c => `<option value="${c.classId || c.id}">${c.name} - ${c.day} ${c.startTime}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Failed to load enrollment data:', error);
+    }
+}
+
+async function handleEnrollStudent(e) {
+    e.preventDefault();
+    const studentId = document.getElementById('enrollStudentId').value;
+    const classId = document.getElementById('enrollClassId').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/Student/addClass/${studentId}/${classId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (response.ok) {
+            showModalAlert('enrollStudentAlert', 'Student enrolled successfully!', 'success');
+            setTimeout(() => {
+                closeModal('enrollStudentModal');
+            }, 1500);
+        } else {
+            showModalAlert('enrollStudentAlert', 'Failed to enroll student', 'error');
+        }
+    } catch (error) {
+        showModalAlert('enrollStudentAlert', 'Failed to enroll student', 'error');
+    }
+}
+
+// async function loadCoursesAndFacultyForClass() {
+//     try {
+//         const [coursesRes, facultyRes] = await Promise.all([
+//             fetch(`${API_BASE_URL}/student/courses/get`, {
+//                 headers: { 'Authorization': `Bearer ${authToken}` }
+//             }),
+//             fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
+//                 headers: { 'Authorization': `Bearer ${authToken}` }
+//             })
+//         ]);
+        
+//         if (coursesRes.ok) {
+//             const courses = await coursesRes.json();
+//             const courseSelect = document.getElementById('newClassCourse');
+//             courseSelect.innerHTML = '<option value="">Select Course</option>' +
+//                 courses.map(c => `<option value="${c.courseId || c.id}">${c.name} (${c.code})</option>`).join('');
+//         }
+        
+//         if (facultyRes.ok) {
+//             const faculty = await facultyRes.json();
+//             const facultySelect = document.getElementById('newClassFaculty');
+//             facultySelect.innerHTML = '<option value="">Select Faculty</option>' +
+//                 faculty.map(f => `<option value="${f.facultyMemberId}">${f.name}</option>`).join('');
+//         }
+//     } catch (error) {
+//         console.error('Failed to load data for class form:', error);
+//     }
+// }
+
+async function loadCoursesAndFacultyForClass() {
+    try {
+        const [coursesRes, facultyRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/admin/courses/all/get`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+
+        if (coursesRes.ok) {
+            const courses = await coursesRes.json();
+            const courseSelect = document.getElementById('newClassCourse');
+            courseSelect.innerHTML =
+                '<option value="">Select Course</option>' +
+                courses.map(c =>
+                    `<option value="${c.id}">${c.name} (${c.code})</option>`
+                ).join('');
+        }
+
+        // if (facultyRes.ok) {
+        //     const faculty = await facultyRes.json();
+        //     const facultySelect = document.getElementById('newClassFaculty');
+        //     facultySelect.innerHTML =
+        //         '<option value="">Select Faculty</option>' +
+        //         faculty.map(f =>
+        //             `<option value="${f.facultyMemberId}">${f.name}</option>`
+        //         ).join('');
+        // }
+
+            if (facultyRes.ok) {
+            const faculty = await facultyRes.json();
+
+            const newFacultySelect = document.getElementById('newClassFaculty');
+            const editFacultySelect = document.getElementById('editClassFaculty');
+
+            if (newFacultySelect) {
+                newFacultySelect.innerHTML =
+                    '<option value="">Select Faculty</option>' +
+                    faculty.map(f =>
+                        `<option value="${f.facultyMemberId}">${f.name}</option>`
+                    ).join('');
+            }
+
+            if (editFacultySelect) {
+                editFacultySelect.innerHTML =
+                    '<option value="">Select Faculty</option>' +
+                    faculty.map(f =>
+                        `<option value="${f.facultyMemberId}">${f.name}</option>`
+                    ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load courses/faculty:', error);
+    }
+}
+
 
 function showModalAlert(elementId, message, type) {
     const alertDiv = document.getElementById(elementId);
@@ -711,7 +1355,6 @@ function showAlert(elementId, message, type) {
     setTimeout(() => alertDiv.innerHTML = '', 5000);
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.classList.remove('active');
