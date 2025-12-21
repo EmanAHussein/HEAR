@@ -4,11 +4,8 @@ import com.hear.hear.dtos.ClassDto;
 import com.hear.hear.dtos.RegisterClassDto;
 import com.hear.hear.dtos.RegisterCourseDto;
 import com.hear.hear.dtos.UpdateClassDto;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
+import org.mapstruct.*;
 import com.hear.hear.entities.Class;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
@@ -24,6 +21,8 @@ public interface ClassMapping {
             @MappingTarget Class updatedClass
     );
 
+    @Mapping(source = "course.id", target = "courseId")
+    @Mapping(source = "facultyMember.id", target = "facultyMemberId")
     ClassDto toDto(Class aClass);
     List<ClassDto> toDto(List<Class> classList);
 }

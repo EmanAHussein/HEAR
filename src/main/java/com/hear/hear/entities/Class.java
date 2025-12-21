@@ -54,7 +54,6 @@ public class Class {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "Faculty_Member_id", referencedColumnName = "ID")
-    @JsonBackReference
     private FacultyMember facultyMember;
 
     @ManyToMany(mappedBy = "takesClasses")
