@@ -69,55 +69,6 @@ async function handleLogin(e) {
     }
 }
 
-// async function handleRegister(e) {
-//     e.preventDefault();
-//     const role = document.getElementById('registerRole').value;
-    
-//     const userData = {
-//         name: document.getElementById('registerName').value,
-//         email: document.getElementById('registerEmail').value,
-//         phone: document.getElementById('registerPhone').value,
-//         password: document.getElementById('registerPassword').value,
-//         role: role,
-//         admin: false
-//     };
-
-//     if (role === 'STUDENT') {
-//         userData.profile = {
-//             studentCode: parseInt(document.getElementById('studentCode').value),
-//             currentLevel: document.getElementById('currentLevel').value,
-//             department: document.getElementById('studentDepartment').value
-//         };
-//     } else if (role === 'FACULTYMEMBER') {
-//         userData.profile = {
-//             jobTitle: document.getElementById('facultyJobTitle').value,
-//             department: document.getElementById('facultyDepartment').value,
-//             scientificDegree: document.getElementById('facultyDegree').value,
-//             bio: document.getElementById('facultyBio').value
-//         };
-//     }
-
-//     try {
-//         const response = await fetch(`${API_BASE_URL}/auth/register`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify(userData)
-//         });
-
-//         if (response.ok) {
-//             showAlert('registerAlert', 'Registration successful! Please login.', 'success');
-//             setTimeout(() => {
-//                 document.getElementById('registerForm').reset();
-//                 showLoginPage({ preventDefault: () => {} });
-//             }, 2000);
-//         } else {
-//             showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
-//         }
-//     } catch (error) {
-//         showAlert('registerAlert', 'Registration failed. Please try again.', 'error');
-//     }
-// }
-
 async function handleRegister(e) {
     e.preventDefault();
     const role = document.getElementById('registerRole').value;
@@ -186,6 +137,8 @@ async function loadUserProfile() {
     } catch (error) {
         console.error('Failed to load user profile:', error);
     }
+
+    
 }
 
 function showDashboard() {
@@ -200,8 +153,13 @@ function showDashboard() {
     document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
 
     setupMenu();
-    showSection('adminDashboard');
+
+    showSection('scheduleSection');
+    console.log('Edit button:', document.getElementById('editProfileBtn'));
+    updateProfileUIByRole(); 
+
 }
+
 
 function setupMenu() {
     const menu = document.getElementById('sidebarMenu');
@@ -210,41 +168,16 @@ function setupMenu() {
     menuItems += '<div class="menu-item" onclick="showSection(\'profileSection\')">👤 My Profile</div>';
     menuItems += '<div class="menu-item" onclick="showSection(\'scheduleSection\')">📅 My Schedule</div>';
 
-    // if (currentUser.role === 'STUDENT') {
-    //     menuItems += '<div class="menu-item" onclick="showSection(\'coursesSection\')">📚 My Courses</div>';
-    // }
-
-    menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
-    menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
-    menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
-    menuItems += '<div class="menu-item" onclick="showSection(\'coursesManagementSection\')">📚 Courses</div>';
-    menuItems += '<div class="menu-item" onclick="showSection(\'classesManagementSection\')">🏫 Classes</div>';
+    if (currentUser.admin == 'true') {
+        menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
+        menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
+        menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
+        menuItems += '<div class="menu-item" onclick="showSection(\'coursesManagementSection\')">📚 Courses</div>';
+        menuItems += '<div class="menu-item" onclick="showSection(\'classesManagementSection\')">🏫 Classes</div>';
+    }
 
     menu.innerHTML = menuItems;
 }
-
-// function setupMenu() {
-//     const menu = document.getElementById('sidebarMenu');
-//     let menuItems = '';
-
-//     // Always visible
-//     menuItems += '<div class="menu-item" onclick="showSection(\'profileSection\')">👤 My Profile</div>';
-//     menuItems += '<div class="menu-item" onclick="showSection(\'scheduleSection\')">📅 My Schedule</div>';
-
-//     // ADMIN ONLY
-//     if (currentUser.isAdmin === true) {
-//         menuItems += '<div class="menu-item" onclick="showSection(\'adminDashboard\')">📊 Dashboard</div>';
-//         menuItems += '<div class="menu-item" onclick="showSection(\'studentsSection\')">👥 Students</div>';
-//         menuItems += '<div class="menu-item" onclick="showSection(\'facultySection\')">👨‍🏫 Faculty</div>';
-//         menuItems += '<div class="menu-item" onclick="showSection(\'coursesManagementSection\')">📚 Courses</div>';
-//         menuItems += '<div class="menu-item" onclick="showSection(\'classesManagementSection\')">🏫 Classes</div>';
-//     }
-
-//     menu.innerHTML = menuItems;
-// }
-
-// setupMenu();
-
 
 
 function showSection(sectionId) {
@@ -264,7 +197,6 @@ function showSection(sectionId) {
         'facultySection': 'Faculty Management',
         'profileSection': 'My Profile',
         'scheduleSection': 'My Schedule',
-        // 'coursesSection': 'My Courses',
         'coursesManagementSection': 'Courses Management',
         'classesManagementSection': 'Classes Management'
     };
@@ -274,67 +206,10 @@ function showSection(sectionId) {
     if (sectionId === 'facultySection') loadFaculty();
     if (sectionId === 'profileSection') loadProfile();
     if (sectionId === 'scheduleSection') loadSchedule();
-    // if (sectionId === 'coursesSection') loadCourses();
     if (sectionId === 'adminDashboard') loadDashboardStats();
     if (sectionId === 'coursesManagementSection') loadAllCourses();
     if (sectionId === 'classesManagementSection') loadAllClasses();
 }
-
-// function showSection(sectionId) {
-//     const adminSections = [
-//         'adminDashboard',
-//         'studentsSection',
-//         'facultySection',
-//         'coursesManagementSection',
-//         'classesManagementSection'
-//     ];
-
-//     if (!currentUser.isAdmin && adminSections.includes(sectionId)) {
-//         // Force non-admins back to schedule
-//         showSection('scheduleSection');
-//         return;
-//     }
-
-//     document.querySelectorAll('.content-section').forEach(section => {
-//         section.classList.remove('active');
-//     });
-
-//     document.querySelectorAll('.menu-item').forEach(item => {
-//         item.classList.remove('active');
-//     });
-
-//     document.getElementById(sectionId).classList.add('active');
-
-//     const titles = {
-//         adminDashboard: 'Dashboard',
-//         studentsSection: 'Students Management',
-//         facultySection: 'Faculty Management',
-//         profileSection: 'My Profile',
-//         scheduleSection: 'My Schedule',
-//         coursesManagementSection: 'Courses Management',
-//         classesManagementSection: 'Classes Management'
-//     };
-
-//     document.getElementById('pageTitle').textContent =
-//         titles[sectionId] || 'Dashboard';
-
-//     // loaders
-//     if (sectionId === 'studentsSection') loadStudents();
-//     if (sectionId === 'facultySection') loadFaculty();
-//     if (sectionId === 'profileSection') loadProfile();
-//     if (sectionId === 'scheduleSection') loadSchedule();
-//     if (sectionId === 'adminDashboard') loadDashboardStats();
-//     if (sectionId === 'coursesManagementSection') loadAllCourses();
-//     if (sectionId === 'classesManagementSection') loadAllClasses();
-// }
-
-
-// if (currentUser.isAdmin === true) {
-//     showSection('adminDashboard');
-// } else {
-//     showSection('scheduleSection');
-// }
-
 
 async function loadDashboardStats() {
     try {
@@ -496,68 +371,6 @@ async function loadSchedule() {
     }
 }
 
-// async function loadCourses() {
-//     try {
-//         const response = await fetch(`${API_BASE_URL}/student/courses/get`, {
-//             headers: { 'Authorization': `Bearer ${authToken}` }
-//         });
-
-//         if (response.ok) {
-//             const courses = await response.json();
-//             const tbody = document.getElementById('coursesTableBody');
-            
-//             if (courses.length === 0) {
-//                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No courses enrolled</td></tr>';
-//                 return;
-//             }
-
-//             tbody.innerHTML = courses.map(course => `
-//                 <tr>
-//                     <td>${course.name}</td>
-//                     <td>${course.code}</td>
-//                     <td>${course.creditHours}</td>
-//                     <td>${course.description || 'N/A'}</td>
-//                 </tr>
-//             `).join('');
-//         }
-//     } catch (error) {
-//         document.getElementById('coursesTableBody').innerHTML = '<tr><td colspan="4">Failed to load courses</td></tr>';
-//     }
-// }
-
-// async function loadAllCourses() {
-//     try {
-//         const response = await fetch(`${API_BASE_URL}/student/courses/get`, {
-//             headers: { 'Authorization': `Bearer ${authToken}` }
-//         });
-
-//         if (response.ok) {
-//             const courses = await response.json();
-//             const tbody = document.getElementById('coursesManagementTableBody');
-            
-//             if (courses.length === 0) {
-//                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No courses found</td></tr>';
-//                 return;
-//             }
-
-//             tbody.innerHTML = courses.map(course => `
-//                 <tr>
-//                     <td>${course.name}</td>
-//                     <td>${course.code}</td>
-//                     <td>${course.creditHours}</td>
-//                     <td>${course.description || 'N/A'}</td>
-//                     <td>
-//                         <button class="btn btn-primary btn-small" onclick="showEditCourseModal(${course.courseId || course.id}, '${course.name}', '${course.code}', '${course.creditHours}', '${course.description || ''}')">Edit</button>
-//                         <button class="btn btn-danger btn-small" onclick="deleteCourse(${course.courseId || course.id})">Delete</button>
-//                     </td>
-//                 </tr>
-//             `).join('');
-//         }
-//     } catch (error) {
-//         console.error('Failed to load courses:', error);
-//     }
-// }
-
 async function loadAllCourses() {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/courses/all/get`, {
@@ -603,7 +416,6 @@ async function loadAllCourses() {
         console.error('Failed to load all courses:', error);
     }
 }
-
 
 async function loadAllClasses() {
     try {
@@ -874,6 +686,10 @@ async function handleAddClass(e) {
 }
 
 async function showEditProfileModal() {
+
+    const role = currentUser?.role?.toString().toUpperCase().trim();
+    if (role?.includes('STUDENT')) return;
+
     document.getElementById('editProfileModal').classList.add('active');
     
     try {
@@ -883,20 +699,9 @@ async function showEditProfileModal() {
 
         if (response.ok) {
             const profile = await response.json();
-            
-            document.getElementById('editProfileName').value = profile.name || currentUser.name;
-            document.getElementById('editProfileEmail').value = currentUser.email;
-            document.getElementById('editProfilePhone').value = currentUser.phone || '';
-            
-            if (currentUser.role === 'STUDENT') {
-                document.getElementById('editStudentProfileFields').classList.remove('hidden');
-                document.getElementById('editFacultyProfileFields').classList.add('hidden');
-                document.getElementById('editStudentCode').value = profile.studentCode || '';
-                document.getElementById('editCurrentLevel').value = profile.currentLevel || '';
-                document.getElementById('editStudentDepartment').value = profile.department || 'GENERAL';
-            } else if (currentUser.role === 'FACULTYMEMBER') {
+
+            if (currentUser.role === 'FACULTYMEMBER') {
                 document.getElementById('editFacultyProfileFields').classList.remove('hidden');
-                document.getElementById('editStudentProfileFields').classList.add('hidden');
                 document.getElementById('editJobTitle').value = profile.jobTitle || '';
                 document.getElementById('editScientificDegree').value = profile.scientificDegree || '';
                 document.getElementById('editFacultyDepartment').value = profile.department || 'GENERAL';
@@ -912,22 +717,7 @@ async function handleEditProfile(e) {
     e.preventDefault();
     
     try {
-        if (currentUser.role === 'STUDENT') {
-            const profileData = {
-                studentCode: parseInt(document.getElementById('editStudentCode').value),
-                currentLevel: document.getElementById('editCurrentLevel').value,
-                department: document.getElementById('editStudentDepartment').value
-            };
-            
-            await fetch(`${API_BASE_URL}/user/profile/update`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify(profileData)
-            });
-        } else if (currentUser.role === 'FACULTYMEMBER') {
+        if (currentUser.role === 'FACULTYMEMBER') {
             const profileData = {
                 jobTitle: document.getElementById('editJobTitle').value,
                 department: document.getElementById('editFacultyDepartment').value,
@@ -1115,16 +905,6 @@ async function handleEditCourse(e) {
     }
 }
 
-// async function showEditClassModal(classId, startTime, endTime, room, day, facultyMemberId) {
-//     document.getElementById('editClassModal').classList.add('active');
-//     document.getElementById('editClassId').value = classId;
-//     document.getElementById('editClassStartTime').value = startTime;
-//     document.getElementById('editClassEndTime').value = endTime;
-//     document.getElementById('editClassRoom').value = room;
-//     document.getElementById('editClassDay').value = day;
-//     document.getElementById('editClassFaculty').value = facultyMemberId;
-// }
-
 async function showEditClassModal(
     classId,
     startTime,
@@ -1144,8 +924,6 @@ async function showEditClassModal(
     document.getElementById('editClassDay').value = day;
 
     document.getElementById('editClassFaculty').value = facultyMemberId;
-
-    // selectedEditFacultyId = facultyMemberId;
 }
 
 async function handleEditClass(e) {
@@ -1233,35 +1011,6 @@ async function handleEnrollStudent(e) {
     }
 }
 
-// async function loadCoursesAndFacultyForClass() {
-//     try {
-//         const [coursesRes, facultyRes] = await Promise.all([
-//             fetch(`${API_BASE_URL}/student/courses/get`, {
-//                 headers: { 'Authorization': `Bearer ${authToken}` }
-//             }),
-//             fetch(`${API_BASE_URL}/admin/faculty_members/all/get`, {
-//                 headers: { 'Authorization': `Bearer ${authToken}` }
-//             })
-//         ]);
-        
-//         if (coursesRes.ok) {
-//             const courses = await coursesRes.json();
-//             const courseSelect = document.getElementById('newClassCourse');
-//             courseSelect.innerHTML = '<option value="">Select Course</option>' +
-//                 courses.map(c => `<option value="${c.courseId || c.id}">${c.name} (${c.code})</option>`).join('');
-//         }
-        
-//         if (facultyRes.ok) {
-//             const faculty = await facultyRes.json();
-//             const facultySelect = document.getElementById('newClassFaculty');
-//             facultySelect.innerHTML = '<option value="">Select Faculty</option>' +
-//                 faculty.map(f => `<option value="${f.facultyMemberId}">${f.name}</option>`).join('');
-//         }
-//     } catch (error) {
-//         console.error('Failed to load data for class form:', error);
-//     }
-// }
-
 async function loadCoursesAndFacultyForClass() {
     try {
         const [coursesRes, facultyRes] = await Promise.all([
@@ -1283,17 +1032,7 @@ async function loadCoursesAndFacultyForClass() {
                 ).join('');
         }
 
-        // if (facultyRes.ok) {
-        //     const faculty = await facultyRes.json();
-        //     const facultySelect = document.getElementById('newClassFaculty');
-        //     facultySelect.innerHTML =
-        //         '<option value="">Select Faculty</option>' +
-        //         faculty.map(f =>
-        //             `<option value="${f.facultyMemberId}">${f.name}</option>`
-        //         ).join('');
-        // }
-
-            if (facultyRes.ok) {
+        if (facultyRes.ok) {
             const faculty = await facultyRes.json();
 
             const newFacultySelect = document.getElementById('newClassFaculty');
@@ -1343,11 +1082,29 @@ function checkAuth() {
     const token = localStorage.getItem('authToken');
     if (token) {
         authToken = token;
+
         loadUserProfile().then(() => {
-            if (currentUser) showDashboard();
-        });
+        if (!currentUser) return;
+
+        showDashboard();
+    });
+    }
+
+
+}
+
+function updateProfileUIByRole() {
+    const editBtn = document.getElementById('editProfileBtn');
+
+    if (!editBtn || !currentUser) return;
+
+    if (currentUser.role === 'STUDENT') {
+        editBtn.style.display = 'none';
+    } else {
+        editBtn.style.display = 'inline-block';
     }
 }
+
 
 function showAlert(elementId, message, type) {
     const alertDiv = document.getElementById(elementId);

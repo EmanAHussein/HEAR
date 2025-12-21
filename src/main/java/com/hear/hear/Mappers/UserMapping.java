@@ -4,10 +4,7 @@ import com.hear.hear.dtos.RegisterUserRequest;
 import com.hear.hear.dtos.UpdateUserDto;
 import com.hear.hear.dtos.UserDto;
 import com.hear.hear.entities.User;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface UserMapping {
@@ -20,6 +17,7 @@ public interface UserMapping {
             @MappingTarget User user
     );
 
+//    @Mapping(source = "admin", target = "isAdmin")
     UserDto toDto(User user);
 
 }
