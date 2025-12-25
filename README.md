@@ -17,13 +17,10 @@ To run the container:
 ```
 docker compose up -d
 ```
-5. Put the Entities package outside the project temporarily
-6. Try running the project to make sure everything works just fine.
-7. Return the Entities package back to its place in 
+5. Try running the project to make sure everything works just fine.
 ```
 HEAR/src/main/java/com/hear/hear
 ```
-***Explanation: I'm using Flyway to manage and run DB migrations but when the Java classes of the entities already exist Flyway trys to create the DB from the Entity Classes not from the initial migration***
 
 - **If the whole thing seems ridiculous and sophisticated just do this:**
 1. Update MYSQL to 8.0+
