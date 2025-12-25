@@ -1,4 +1,4 @@
-# H.E.A.R *(A Collaborative Student Platform)*
+# H.E.A.R *(A Schedule Management System)*
 
 ## Development Environment:
 1. IntelliJ IDEA Ultimate Edition (cuz it facilitates development with Spring Boot)
