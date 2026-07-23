@@ -17,18 +17,10 @@ To run the container:
 ```
 docker compose up -d
 ```
-5. Try running the project to make sure everything works just fine.
+4. Try running the project to make sure everything works just fine.
 ```
 HEAR/src/main/java/com/hear/hear
 ```
-
-- **If the whole thing seems ridiculous and sophisticated just do this:**
-1. Update MYSQL to 8.0+
-2. Create new connection with 
-   1. user: root
-   2. password: root
-   3. port: 3307
-4. continue from step **5.** of setting up the container thing.
 
 ## *Enjoy Development :D*
 
